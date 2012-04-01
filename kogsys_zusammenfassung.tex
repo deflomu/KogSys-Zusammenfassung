@@ -1,0 +1,78 @@
+\documentclass[10pt,a4paper,german,twoside]{article}
+
+\usepackage{makeidx}
+\usepackage[german]{babel}
+\makeindex
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}
+\usepackage{gensymb}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{stmaryrd}
+%\usepackage{gastex}
+%\usepackage{pstricks, pst-node, pst-plot}
+\usepackage{epsfig}
+\usepackage[left=3cm,right=3cm,top=3cm,bottom=3cm]{geometry}
+\usepackage[colorlinks=true,urlcolor=blue,linkcolor=black,backref,pagebackref]{hyperref}
+
+\hypersetup{
+	pdftitle = {KogSys Zusammenfassung}
+}
+
+\begin{document}
+
+%*************** new commands ***********************************************************
+
+\newcommand{\myvector}[1]{\stackrel{\to}{#1}}
+\newcommand{\myprob}[2]{P(#1 \, | \, #2)}
+\newcommand{\myvectwo}[2]{\left( \begin{array}{c} #1 \\ #2 \end{array} \right)}
+\newcommand{\myvecqfour}[4]{\left( \begin{array}{c} #1 \\ #2 \\ #3 \\ #4 \end{array} \right)}
+\newcommand{\myvecfour}[4]{\left( \begin{array}{cc} #1 & #2 \\ #3 & #4 \end{array} \right)}
+\newcommand{\myvecfourright}[4]{\left( \begin{array}{rr} #1 & #2 \\ #3 & #4 \end{array} \right)}
+\newcommand{\myvecthree}[3]{\left( \begin{array}{c} #1 \\ #2 \\ #3 \end{array} \right)}
+\newcommand{\myvecnine}[9]{\left( \begin{array}{ccc} #1 & #2 & #3 \\ #4 & #5 & #6 \\ #7 & #8 & #9 \end{array} \right)}
+\newcommand{\myvecnineright}[9]{\left( \begin{array}{rrr} #1 & #2 & #3 \\ #4 & #5 & #6 \\ #7 & #8 & #9 \end{array} \right)}
+\newcommand{\quaternion}{\textbf{q}}
+%\newcommand{\mypic}[2]{\begin{center} \includegraphics[width=#1 cm]{pics/#2.eps}\end{center}}
+%\newcommand{\mypictwo}[4]{\begin{center} \includegraphics[width=#1 cm]{pics/#2.eps} \\[0,2cm] \includegraphics[width=#3 cm]{pics/#4.eps} \end{center}}
+\newcommand{\mypic}[2]{\begin{center} \includegraphics[width=#1 cm]{bilder/#2.png}\end{center}}
+\newcommand{\mypictwo}[4]{\begin{center} \includegraphics[width=#1 cm]{bilder/#2.png} \\[0,2cm] \includegraphics[width=#3 cm]{bilder/#4.png} \end{center}}
+%\newcommand{\href}[2]{#2}
+
+%*************** new commands (end) ******************************************************
+
+\setlength{\parindent}{0 pt}
+\pagestyle{headings}
+
+%=========================================================================================
+%============= Beginn des Dokuments ======================================================
+%=========================================================================================
+
+\include{title}
+
+\include{kapitel/00_einleitung}
+
+\tableofcontents
+
+\pagestyle{headings}
+
+\include{kapitel/01_signalverarbeitung}
+\include{kapitel/02_sensorik}
+\include{kapitel/03_klassifikation}
+\include{kapitel/04_maschinelles_lernen}
+\include{kapitel/05_spracherkennung}
+\include{kapitel/06_maschinensehen}
+\include{kapitel/07_wissenrepraesentation}
+\include{kapitel/08_robotik}
+
+
+%============= Register ==================================================================
+
+\printindex
+
+%=========================================================================================
+%=========================================================================================
+%=========================================================================================
+
+\end{document}

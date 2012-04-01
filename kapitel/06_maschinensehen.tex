@@ -1,0 +1,960 @@
+% !TeX root = summary.tex
+
+\section{Maschinensehen}
+
+\subsection{Bildgenerierung}
+
+\begin{itemize}
+\item Heute werden oftmals Digitalkameras verwendet (meist CCD, aber auch CMOS)
+\item Anschluss erfolgt über: Firewire (IEEE1394), USB, Camera Link, \dots
+\item Kameras liefern direkt digitalisierte Bilddaten
+\begin{itemize}
+\item Format je nach Kamera und Modus unterschiedlich
+\item Bei S/W-Kameras meist 8bit Graustufen
+\item Bei Farbkameras entweder als bayer-Pattern oder meist bereits konvertiert als RGB24, YUV422, etc.
+\end{itemize}
+\item Kameras unterscheiden sich durch:
+\begin{itemize}
+\item Bildqualität (Qualität CCD-Chip, aber auch grundlegend: Auswahl Linse/Objektiv)
+\item Graustufen- oder Farbkamera
+\item Auflösung
+\item Bei Farbkameras: Welche Farbkodierungen sind verfügbar? (8bit, 16bit, 24bit)
+\item Wichtig je nach Anwendung: Welche maximale Framerate ist bei welchem Bildformat noch verfügbar? (z.B. 15/30/60/120/200 Hz)
+\end{itemize}
+\end{itemize}
+
+\subsection{Bildrepräsentation}
+
+\textbf{Monochrombild:} Diskrete Funktion
+\begin{eqnarray*}
+Img \, : \, [0 \dots n-1] \times [0 \dots m-1] &\to& [0 \dots q] \\ (u,v) &\mapsto& Img(u,v)
+\end{eqnarray*}
+Üblich: $q = 255$; $n = 640$, $m=480$ (VGA) oder $n = 768$, $m=576$ (PAL) \\[0,1cm]
+\textbf{Farbbild:}
+\begin{itemize}
+\item Viele verschiedene Farbmodelle für unterschiedliche Anwendungen
+\item Klassifikation nach erreichbarem Farbraum
+\end{itemize}
+\textbf{Beispiele:}
+\begin{itemize}
+\item S/W, Grauwertstufen
+\item RGB-Modell: speziell für Monitore (Phosphor-Kristalle), sehr üblich $$Img(u,v) \in \mathbb{R}^3 = (r,g,b)^T$$
+\item HSI (Hue, Saturation, Intensity): speziell für Farbsegmentierung
+\item CIE: physikalisch (Wellenlänge)
+\item CMYK- Modell: Farbdrucker (subtraktive Farbmischung)
+\item YIQ: Fernsehmodell
+\end{itemize}
+
+\subsubsection*{RGB-Modell}\index{RGB-Modell}
+
+\begin{eqnarray*}
+Img \, : \, [0 \dots n-1] \times [0 \dots m-1] &\to& [0 \dots R] \times [0 \dots G] \times [0 \dots B] \\ (u,v) &\mapsto& Img(u,v) = (r,g,b)
+\end{eqnarray*}
+\begin{itemize}
+\item additive Farbmischung
+\item drei Farbwerte: Rot, Grün, Blau \\ oft: $256 \times 256 \times 256$ Nuancen \\ ($R=G=B=255$, 8Bit, "{}RGB24"{}) = 16,8 Mio. Farben
+\item oft verwendet von Kamera-Treibern
+\end{itemize}
+
+\subsubsection*{HSI-/HSV-Modell\index{HSI-/HSV-Modell}}
+
+\begin{itemize}
+\item Hue (Farbnuancen), Saturation (Sättigung), Intensity/Value (Helligkeit)
+\item trennt Helligkeit vom Farbwert $\Rightarrow$ unempfindlich gegen Beleuchtungsänderungen
+\item Umrechnung von RGB nach HSI (falls $R=G=B$, dann ist $H$ undefiniert; falls $R=G=B=0$, dann ist $S$ undefiniert)
+\end{itemize}
+\begin{eqnarray*}
+c &=& \textrm{arcos } \frac{2R - G - B}{2 \sqrt{(R-G)^2 + (R-B)(G-B)}} \\
+H &=& \left\{ \begin{array}{cl} c & \textrm{ falls } B < G \\ 360\degree - c & \textrm{ sonst} \end{array} \right. \\
+S &=& 1 - \frac{3}{R+G+B} \min (R,G,B) \\
+I &=& \frac{1}{3} (R + G + B)
+\end{eqnarray*}
+
+\subsubsection*{Hinterlegung}
+
+\begin{itemize}
+\item Hinterlegung eines 8bit Graustufen-Bildes im Speicher
+\begin{itemize}
+\item Pixel werden zeilenweise, von oben links nach unten rechts, linear abgelegt (Achtung: z.B. bei Bitmaps von unten links nach oben rechts)
+\item Graustufen-Kodierung: ein Byte pro pixel; 0 schwarz, 255 weiß, dazwischen Graustufen
+\end{itemize}
+\item Hinterlegung eines RGB24 Farbbildes im Speicher
+\begin{itemize}
+\item Pixel werden zeilenweise, wie beim Graustufen-Bild, abgelegt
+\item Farbkodierung: drei Bytes pro Pixel; für jeden Kanal gilt: 0 minimale, 255 maximale Intensität, dazwischen Nuancen
+\end{itemize}
+\end{itemize}
+
+\subsubsection*{Grauwert-Transformation}
+
+Transformation von RGB24 nach 8bit Graustufen:
+\begin{itemize}
+\item Eine Möglichkeit: $g = (R+G+B)/3$, aber: menschliches Auge ist am empfindlichsten gegenüber der Farbe Grün.
+\item Üblicherweise wird deshalb verwendet: $$g = 0,299 \cdot R + 0,587 \cdot G + 0,114 \cdot B$$
+\end{itemize}
+
+\subsubsection*{Bayer-Pattern\index{Bayer-Pattern}}
+
+Sehr hochwertige Kameras, wie z.B. zum Filmen verwendet, besitzen drei Chips pro Pixel. Die meisten Farbkameras haben einen Chip pro pixel, der gegenüber der Farbe Rot, Grün oder Blau empfindlich ist. Bei "{}Ein-Chip-Kameras"{} wird meist das Bayer-Pattern verwendet:
+\begin{itemize}
+\item Um nach RGB24 zu konvertieren, muss interpoliert werden.
+\item Die Empfindlichkeit einer Ein-Chip-Kamera ist um den Faktor 3 niedriger als die einer reinen Graustufen-Kamera.
+\end{itemize}
+
+\subsubsection*{Lochkameramodell\index{Lochkameramodell}}
+
+\mypic{8}{lochkamera2}
+
+Projektion eines Szenenpunktes $P = (X,Y,Z)$ auf einen Bildpunkt $p = (u,v,w)$ mit Brennweite $f$:
+$$\frac{-u}{f} = \frac{X}{Z} \quad , \quad \frac{-v}{f} = \frac{Y}{Z} \quad , \quad w = -f \qquad \Rightarrow \qquad X = - \frac{uZ}{f} \quad , \quad - \frac{vZ}{f}$$
+$$p = \left( \begin{array}{c} u \\ v \\ w \end{array} \right) = \left( \begin{array}{c} u \\ v \\ -f \end{array} \right) = - \frac{f}{Z} \left( \begin{array}{c} X \\ Y \\ Z \end{array} \right) = - \frac{f}{Z} P$$
+Bei der Projektion geht die $Z$-Komponente verloren! \\
+Beispiel mit 2 Kameras:
+\mypic{8}{lochkamera1}
+
+\subsubsection*{Mattscheibenmodell\index{Mattscheibenmodell}}
+
+Einziger Unterschied Mattscheibenmodell $\Leftrightarrow$ Lochkameramodell:
+\begin{itemize}
+\item Projektionszentrum $C$ liegt hinter der Bildebene
+\item dadurch: keine Spiegelung (Minuszeichen entfallen)
+\end{itemize}
+
+\subsubsection*{Linsensysteme\index{Linsensysteme}}
+
+Moderne Kameras benutzen Linsen. \\ Vorteil:
+\begin{itemize}
+\item mehr Lichteinfall
+\end{itemize}
+Nachteile:
+\begin{itemize}
+\item nur Teile der Szene können gleichzeitig fokussiert werden
+\item Linsenkrümmung führt zu Bildverzerrungen
+\end{itemize}
+Bild eines Objekts in Tiefe $Z$ wird in Abstand von der Linse $Z'$ gebildet mit: $$\frac{1}{Z} + \frac{1}{Z'} = \frac{1}{f} \qquad f \, : \, \textrm{Brennweite}$$
+\begin{itemize}
+\item Bei Einstellung der Bildebene auf $Z_0'$ wird ein gewisser Objektbereich um $Z_0$ "{}ausreichend scharf"{} abgebildet.
+\item Beim Menschen: Änderung der Linsenbrennweite.
+\item Bei Kameras: Verschieben der Linse gegenüber Bildebene
+\item Vereinfachung wegen $Z >> Z'$: \\ $\Rightarrow$ Perpektivgleichungen aus dem Lochkameramodell können weiterverwendet werden! $$\frac{1}{Z} + \frac{1}{Z'} \thickapprox \frac{1}{Z'} \quad \Rightarrow \quad \frac{1}{Z'} \thickapprox \frac{1}{f}$$
+\end{itemize}
+
+\subsection{Bildverarbeitung}
+
+\subsubsection*{Konzepte}
+
+\begin{itemize}
+\item Homogene Punktoperationen
+\item Histogrammauswertung
+\item Filterung
+\item Geometrische Operatoren
+\end{itemize}
+$\to$ Unterdrückung von Störungen, "{}Verschönern"{} von Bildern, Verformen von Bildern
+
+\subsubsection*{Homogene Punktoperatoren\index{Homogene Punktoperatoren}}
+
+Anwendung: $$Img'(u,v) = f(Img(u,v))$$
+Unabhängig von der Position bzw. den Nachbarn des Pixels. Implementierung der Funktion $f$ oftmals als Look-Up-Table (Hardware).
+
+\subsubsection*{Affine Punktoperatoren\index{Affine Punktoperatoren}}
+
+Affine Punktoperatoren:
+\begin{eqnarray*}
+f \, : \, [0 \dots q] &\to& [0 \dots q] \\ x &\mapsto& ax+b
+\end{eqnarray*}
+Parameter $a$ und $b$ legen die Funktion fest. Anwendungen:
+\begin{itemize}
+\item Kontrasterhöhung: $b=0$, $a > 0$ \\ Kontrastverminderung: $b=0$, $a < 0$
+\item Helligkeitserhöhung: $b > 0$, $a = 1$ \\ Helligkeitsverminderung: $b < 0$, $a = 1$
+\item Invertierung: $b = q$, $a = -1$
+\item Kombinationen
+\end{itemize}
+
+\subsubsection*{Nicht-Affine Punktoperationen\index{Nicht-Affine Punktoperationen}}
+
+Beliebige Abbildungsfunktion $$f \, : \, [0 \dots q] \to [0 \dots q]$$
+Anwendung:
+\begin{itemize}
+\item Ausgleich von Sensor-Nichtlinearitäten
+\item Gewichtung
+\item Binarisierung
+\end{itemize}
+
+\subsubsection*{Histogramme\index{Histogramme}}
+
+Histogrammfunktion: gibt die Häufigkeit eines Selektionsmerkmals an. Normalerweise: Grauwert
+$$H_{Img}(x) = \# (u,v) \, : \, Img(u,v) = x \, , \, x \in [0 \dots q]$$
+\begin{itemize}
+\item Histogrammausgleich: bessere Anpassung an das Sehvermögen des Menschen; kein Informationsgewinn \\
+$H_n(0)$ \verb|:=| $H_{Img}(0)$ \\
+\verb|for| $x$ \verb|:=| $1$ \verb|to| $q$ \verb|do| \\
+\verb|  |$H_n(x)$ \verb|:=| $H_n(x-1) + H_{Img}(x)$ \\
+\verb|endfor|
+\item Automatische Kontrast- und Helligkeitsapassung durch Histogrammanalyse \\
+$H_n(0)$ \verb|:=| $H_{Img}(0)$ \\
+\verb|for| $x$ \verb|:=| $1$ \verb|to| $q$ \verb|do| \\
+\verb|  |$H_n(x)$ \verb|:=| $H_n(x) \cdot \frac{q}{width \cdot heigth}$ \\
+\verb|endfor|
+\item Bei bereits berechnetem Histogramm $H_{Img}(x)$ kann der Histogrammausgleich durch den folgenden Algorithmus berechnet werden: \\
+$H_n(0)$ \verb|:=| $H_{Img}(0)$ \\
+\verb|for| $y$ \verb|:=| $0$ \verb|to| $height - 1$ \verb|do| \\
+\verb|  for| $x$ \verb|:=| $0$ \verb|to| $width-1$ \verb|do| \\
+\verb|    | $Img'(u,v)$ \verb|:=| $H_n(Img(u,v))$ \\
+\verb|  endfor| \\
+\verb|endfor|
+\end{itemize}
+
+\subsubsection*{Heute}
+
+\begin{itemize}
+\item Bildanalyse durch Frequenzanalyse
+\item Filter in Frequenzbereich
+\item Filter in Ortsbereich
+\end{itemize}
+
+\subsection{Bildanalyse durch Frequenzanalyse}
+
+\begin{itemize}
+\item (Grauwert-) Bilder lassen sich signaltheoretisch als Summe verschiedenfrequenter Signale betrachten.
+\item Niedrige Frequenzen: Schwache Grauwertübergänge
+\item Hohe Frequenzen: Scharfe Grauwertübergänge
+\item Nützlich z.B. zum Finden gerader Linien
+\end{itemize}
+$\to$ Fourier-Analyse!
+
+\subsubsection*{2-Dim Fouriertransformation}
+
+Kontinuierliches 2-dimensionales Signal: $$F(u,v) = \int\limits_{x = - \infty}^{\infty} \int\limits_{y = - \infty}^{\infty} f(x,y) e^{-2i\pi (ux + vy)} dxdy$$
+Diskretes 2-dimensionales Signal: $$F(u,v) = \sum\limits_{x = - \infty}^{\infty} \sum\limits_{y = - \infty}^{\infty} f[x,y] e^{-2i\pi (ux + vy)T}$$
+
+\subsubsection*{Fouriertransformation in der Bildverarbeitung}
+
+DFT bei Bild mit ImgSize $[0 \leq x \leq M][0 \leq y \leq N]$: $$F(u,v) = \sum\limits_{y=0}^{N-1} \left( \sum\limits_{x=0}^{M-1} f[x,y] e^{-2i\pi \frac{ux}{M}} \right) \cdot e^{-2i\pi \frac{vy}{N}}$$
+DFT bei quadratischem Bild mit ImgSize $[0 \leq x \leq N][0 \leq x \leq N]$: $$\sum\limits_{y=0}^{N-1} \sum\limits_{x=0}^{N-1} f[x,y] e^{\frac{-2i\pi (ux + vy)}{N}}$$
+Anschaulich: Durchführung der 1D-DFT auf jeder Zeile und Speicherung der Daten in Matrix (inndere Klammer). Durchführung der 1D-DFT auf jeder Spalte der ermittelten Matrix.
+
+\begin{itemize}
+\item Gewichtete Summation aller Bildpunkte
+\item Zerlegung des Bildes in Sinus- und Cosinusfunktionen
+\item Je weiter ein Punkt im Spektrum vom Bildmittelpunkt entfernt ist, desto höher ist seine darstellende Frequenz $u$ bzw. $v$.
+\item D.h. im Bildinneren tiefe Frequenzen, in äußeren Bereichen hohe Frequenzen
+\item Anwendung:
+\begin{itemize}
+\item Bildanalyse (z.B. Muster-, Geschwindigkeitserkennung)
+\item Bildfilterung (z.B. Tiefpass)
+\item Bildkompression (z.B. in jpeg Format)
+\end{itemize}
+\end{itemize}
+
+\subsubsection*{Fouriertransformation}
+
+\begin{itemize}
+\item Die Variablen $u$ und $v$ heissen Frequenzvariablen
+\item $F(u,v)$ ist komplexe Funktion
+\item $F(u,v)$ ist darstellbar als 2 Bilder
+\begin{itemize}
+\item in Realteil und Imaginärteil $$F(u,v) = R(u,v) + I(u,v)$$
+\item oder Betrag (auch Spektrum genannt, oft logarithmisch dargestellt) und Phase $$F(u,v) = |F(u,v)| \cdot e^{i \varphi (u,v)}$$
+\end{itemize}
+\item Quadrat des Spektrums heisst spektrale Dichte.
+\end{itemize}
+
+\subsection{Bildbearbeitung}
+
+\begin{itemize}
+\item Durch Filter im Ortsbereich oder Transferfunktionen im Frequenzbereich.
+\item Ortsbereich:
+\begin{itemize}
+\item Manipulation von Grauwerten
+\item anschaulich
+\item häufig: Punktoperationen, Glättung
+\end{itemize}
+\item Frequenzbereich:
+\begin{itemize}
+\item Manipulation der Frequenzanteile
+\item keine unmittelbare bildliche Vorstellung
+\item häufig: starke Glättung, frequenzselektive Filter
+\end{itemize}
+\end{itemize}
+
+\subsubsection*{Bildbearbeitung im Ortsbereich}
+
+Faltung zweier Funktionen 1D kontinuierlich: $$h(x) = f(x) * g(x) = \int\limits_{a = - \infty}^{\infty} f(a) g(x-a) da$$
+Faltung zweier Funktionen 1D zeitdiskret: $$h[x] = f[x] * g[x] = \sum\limits_{a = - \infty}^{\infty} f[a] g[x-a]$$
+Faltung zweier Funktionen 2D kontinuierlich: $$h(x,y) = f(x,y) * g(x,y) = \int\limits_{a = -\infty}^{\infty} \int\limits_{b = -\infty}^{\infty} f(a,b) g(x-a,y-b) dadb$$
+Faltung zweier Funktionen 2D zeitdiskret: $$h[x,y] = f[x,y] * g[x,y] = \sum\limits_{a = -\infty}^{\infty} \sum\limits_{b = -\infty}^{\infty} f[a, g[x-a,y-b]$$
+
+\subsubsection*{Faltung}
+
+\begin{itemize}
+\item Bildmatrizen werden in den relevanten Randbereichen mit Nullen gefüllt.
+\item Der neue Bildwert ist eine gewichtete Summe der Pixel die unter der gespiegelten Matrix liegen.
+\item Als Gewichte dienen die Matrizenwerte.
+\item Bildfilterung ist die Faltung einen Bildes mit einer Filtermatrix bzw. Maske.
+\item Die Transferfunktion $H(u,v)$ ist die Fouriertransformierte der Filterfunktion $h(x,y)$.
+\end{itemize}
+
+\subsubsection*{Filteroperationen}
+
+\begin{itemize}
+\item Glättungsoperatoren (Rauschelimination): Mittelwertfilter, Gauß
+\item Kantendetektoren: Prewitt, Sobel, Roberts, Laplace
+\item kombinierte Filter: Laplacian of Gauß
+\end{itemize}
+
+\subsection{Filter}
+
+\subsubsection*{Gauß\index{Gauß-Filter}}
+
+Gaußfilter mit Radius $\sigma$ definiert durch die Gaußfunktion $$G(x,y) = \frac{1}{2 \pi \sigma^2} e^{-\frac{x^2 + y^2}{2\sigma^2}}$$
+
+\subsubsection*{Mittelwrtfilter\index{Mittelwertfilter}}
+
+Ziel: Störunterdrückung \\ Beispiel: Durchschnitt aus 8-Umgebung und Punkt. Größe beliebig wählbar.
+$$m'(x,y) = \sum\limits_{j=-1}^1 \sum\limits_{i=-1}^1 m(i,j) \cdot p(x-j,y-i)$$
+
+\subsubsection*{Anwendung der nachfolgenden Filter}
+am Beispiel des Sobel-X Filters:
+\mypic{12}{filterbsp}
+
+\subsubsection*{Prewitt\index{Prewitt-Filter}}
+
+\textbf{Prewitt-X Filter} $$P_x = \frac{\partial g(x,y)}{\partial x}$$ approximiert durch $$p_x = \left( \begin{array}{ccc} -1 & 0 & 1 \\ -1 & 0 & 1 \\ -1 & 0 & 1 \end{array} \right)$$
+Kantendetektion: vertikal gut, horizontal schlecht \\
+\textbf{Prewitt-Y Filter} $$P_y = \frac{\partial g(x,y)}{\partial y}$$ approximiert durch $$p_y = \left( \begin{array}{rrr} -1 & -1 & -1 \\ 0 & 0 & 0 \\ 1 & 1 & 1 \end{array} \right)$$
+Kantendetektion: vertikal schlecht, horizontal gut \\
+\textbf{Prewitt-Operator}
+\begin{itemize}
+\item Kombination der Prewitt-Filter zur Bestimmung des Grauwertgradientenbetrages $M$: $$M \thickapprox \sqrt{P_x^2 + P_y^2}$$
+\item Danach: Schwellwertfilterung
+\end{itemize}
+
+\subsubsection*{Sobel\index{Sobel-Filter}}
+
+\textbf{Sobel-X Filter} $$S_x = \frac{\partial g(x,y)}{\partial x}$$ approximiert durch $$s_x = \left( \begin{array}{ccc} -1 & 0 & 1 \\ -2 & 0 & 2 \\ -1 & 0 & 1 \end{array} \right)$$
+Kantendetektion: vertikal gut, horizontal schlecht \\
+\textbf{Sobel-Y Filter} $$S_y = \frac{\partial g(x,y)}{\partial y}$$ approximiert durch $$s_y = \left( \begin{array}{rrr} -1 & -2 & -1 \\ 0 & 0 & 0 \\ 1 & 2 & 1 \end{array} \right)$$
+Kantendetektion: vertikal schlecht, horizontal gut \\
+\textbf{Sobel-Operator}
+\begin{itemize}
+\item Kombination der Sobel-Filter zur Bestimmung des Grauwertgradienten-Betrages $M$: $$M \thickapprox \sqrt{S_x^2 + S_y^2}$$
+\item Danach: Schwellwertfilterung
+\end{itemize}
+
+\subsubsection*{Roberts\index{Roberts-Filter}}
+
+$$R(g(x,y)) = |R_x(g(x,y))| + |R_y(g(x,y))|$$ wobei $$R_x = \left( \begin{array}{rr} -1 & 0 \\ 0 & 1 \end{array} \right) \quad , \quad R_y = \left( \begin{array}{rr} 0 & -1 \\ 1 & 0 \end{array} \right)$$
+Kantendetektion: diagonal gut
+
+\subsubsection*{Laplace\index{Laplace-Filter}}
+
+Laplace-Operator: $$\nabla^2 g(x,y) = \frac{\partial^2 g(x,y)}{\partial x^2} + \frac{\partial^2 g(x,y)}{\partial y^2}$$ wobei $$\nabla^2 \thickapprox \left( \begin{array}{rrr} 0 & 1 & 0 \\ 1 & -4 & 1 \\ 0 & 1 & 0 \end{array} \right)$$
+Kantendetektion: Nulldurchgänge markieren Kanten, Subpixelgenauigkeit erreichbar \\ Näherung des Laplace-Operators: $$\nabla^2 \thickapprox \left( \begin{array}{rrr} 1 & 4 & 1 \\ 4 & -20 & 4 \\ 1 & 4 & 1 \end{array} \right)$$
+Kantendetektion: Stärkere Kanten, aber mehr Störkanten
+
+\subsubsection*{Laplacian of Gauß (LoG)\index{Laplacian of Gauß-Filter}}
+
+Der Laplace-Operator ist gegen Rauschen sehr empfindlich. Wesentlich bessere Ergebnisse erhält man, wenn man das Bild zunächst mit einem Gauß-Filter glättet und danach den Laplace-Operator anwendet. $$LoG(g(x,y)) = \nabla^2 (G(x,y) * g(x,y))$$ Approximation (Faltung mit Matrix): $$\nabla^2 G(x,y) = \left( \begin{array}{rrrrr} 0 & 0 & -1 & 0 & 0 \\ 0 & -1 & -2 & -1 & 0 \\ -1 & -2 & 16 & -2 & -1 \\ 0 & -1 & -2 & -1 & 0 \\ 0 & 0 & -1 & 0 & 0 \end{array} \right)$$
+Kantendetektion: Stärkere Kanten,weniger Rauschen
+
+\subsubsection*{Canny-Kantendetektor\index{Canny-Kantendetektor}}
+\begin{enumerate}
+\item Rauschunterdrückung: Gauß-Filter
+\item Kanten detektieren:
+	\begin{itemize}
+	\item Prewitt oder Sobel
+	\item Zusammenrechnen mit \(B' = \sqrt{B_x^2 + B_y^2}\)
+	\item Gradientenrichtung bestimmen: \(\Phi(x,y) = arctan\left(\frac{B_y(x,y)}{B_x(x,y)}\right)\)
+	\item Runden auf 0°, 45°, 90° oder 135°
+	\end{itemize}
+\item Non-Maximum Surpression:
+	\begin{itemize}
+	\item Für jeden Pixel in Gradientenrichtung schauen, ob das Pixel davor oder dahinter einen höheren Wert hat. Falls ja, dann Pixel auf 0 setzen, falls nein, dann beibehalten.
+	\end{itemize}
+\item Hysterese-Schwellwerverfahren:
+	\begin{itemize}
+	\item Verwende zwei Schwellwerte \(T_1\) und \(T_2\) mit \(T_1 \leq T_2\)
+	\item Markiere alle Pixel mit Werten größer \(T_2\) als Kantenpixel
+	\item Setze alle Pixel mit Werten kleiner \(T_1\) auf 0	\item Beginnend bei jedem Kantenpixel:
+		\begin{itemize}		\item Verfolge alle angrenzenden Kanten, solange Wert \(\geq T_1\)
+		\item Markiere alle dazugehörigen Pixel als Kanten
+		\end{itemize}	\item Setze alle noch nicht als Kante markierten Pixel auf 0
+	\end{itemize}
+\end{enumerate}
+
+
+\subsection{2D Bildverarbeitung}
+
+\subsubsection*{Sensorische Erfassung}
+
+Aufgaben der sensorischen Umwelterfassung:
+\begin{itemize}
+\item Wiedererkennung bekannter Sachverhalte: Objekte, Personen, Orte
+\item Erlernen neuer Sachverhalte
+\item Erkennung der eigenen Bewegung
+\end{itemize}
+Verfahren zur Lösung dieser Aufgaben:
+\begin{itemize}
+\item Sensorische Primitive, Segmentierung
+\item Annahmen, Einschränkungen
+\item Lernverfahren
+\end{itemize}
+
+\subsubsection*{Segmentierung\index{Segmentierung}}
+
+Segmentierung ist die Aufteilung eines Bildes in aussagekräftige Bestandteile. Erlaubt:
+\begin{itemize}
+\item Aussagen über das Bild
+\item Reduktion der Datenmenge
+\item Verfolgung von Merkmalen über die Zeit / mehrere Sensoren
+\end{itemize}
+Beliebt sind: Kanten, Ecken, Textur, Farbe
+
+\subsubsection*{Schwellwertfilterung\index{Schwellwertfilterung}}
+
+Schwellwertfilterung zur Konvertierung eines Grauwertbildes in ein binäres Bild. Ziel: Trennung interessanter Objekte vom Hintergrund. $$Img'(u,v) = \left\{ \begin{array}{cl} q & \textrm{ falls } Img(u,v) \geq T \\ 0 & \textrm{ sonst} \end{array} \right.$$
+
+\subsubsection*{Farbe}
+
+Oft können Objekte über ihre Farbe segmentiert werden:
+\begin{itemize}
+\item menschliche Hautfarbe
+\item einheitlich gefärbte Objekte
+\end{itemize}
+Problem:
+\begin{itemize}
+\item wechselnde Lichtbedingungen
+\item Reflexionen, Schattenwürfe
+\end{itemize}
+Verfahren:
+\begin{itemize}
+\item Histogrammbasiert (z.B. in RGB, HSV bzw. RG, HS) \\ HS-Farbhistogramm:
+\begin{itemize}
+\item Weglassen des $I$-Kanals ergibt 2D-Histogramm
+\item Training eines Klassifikators auf dem Histogramm
+\end{itemize}
+\item mit Hilfe der Mahalanobis-Distanz (z.B. in RGB): \\ gegeben: $x_i = (R,G,B)^T$ sind manuell positiv klassifizierte Pixel
+\begin{eqnarray*}
+C &=& \frac{1}{n-1} \sum\limits_{i=1}^n (x_i - \overline{x})(x_i - \overline{x})^T \qquad \textrm{Kovarianzmatrix} \\ p(x) &=& e^{- \frac{1}{2 \sigma^2} x^T C^{-1} x} \qquad \textrm{Berechnung der Farbwahrsch.}
+\end{eqnarray*}
+\item Klassifikation durch Verwendung von Neuronalen Netzen
+\item durch Intervallschranken im HSI-Farbraum:
+$$f(H,S,V) = H \geq H_{\min} \wedge H \leq H_{\max} \wedge S \geq S_{\min} \wedge S \leq S_{\max} \wedge V \geq V_{\min} \wedge V \leq V_{\max}$$
+\end{itemize}
+
+\subsubsection*{Morphologische Operatoren\index{Morphologische Operatoren}}
+
+\begin{itemize}
+\item Wähle Struckturelement, z.B. Quadrat mit 3x3 Pixel
+\item Wandere mit Struckturelement über Bild und führe Operation durch
+\item \textbf{Dilatation}\index{Dilatation} ist ein Operation auf Binärbildern. Alle Bereiche, die farbig (1 und nicht 0, da Binär) sind, werden ausgedehnt. Immer wenn unter dem mittleren Pixel des Struckturelements ein farbiges Pixel ist, werden alle Pixel unter dem Struckturelement als farbig markiert.
+\item \textbf{Erosion}\index{Erosion} ist die Komplemetäroperation zu Dilatation. Nur falls alle Pixel unter dem Struckturelement farbig sind, wird das Element in der Mitte farbig gelassen und alle anderen auf 0 gesetzt. Falls nicht alle Pixel farbig sind, werden alle auf 0 gesetzt.
+\item Öffnen-Operation\index{Öffnen-Operation}: Zuerst Erosion und anschließend Dilatation anwenden.
+\item Schließen-Operation\index{Schließen-Operation}: Zuerst Dilatation und anschließend Erosion anwenden.
+
+\end{itemize}
+
+
+\subsubsection*{Bewegung}
+
+Einfacher Ansatz: Differenzbilder
+\begin{itemize}
+\item Subtraktion aufeinander folgender Bilder einer Video-Sequenz: $$Img_t'(u,v) = |Img_t(u,v) - Img_{t-1}(u,v)|$$
+\item Anschließend kann auf $Img_t'$ Schwellwertfilterung durchgeführt werden
+\item Regionen, in denen sich etwas bewegt, erscheinen weiß; ruhige Regionen erscheinen schwarz
+\item Bewegung in homogenen Regionen wird nicht erkannt (Kanten, Textur sind notwendig)
+\item Richtung der Bewegung wird nicht erkannt
+\end{itemize}
+Differenzbilder werden auch für Hintergrundsubtraktion verwendet, dann wird $Img_{t-1}$ durch ein festes $Img_0$ ersetzt. Weitere Ansätze: Optical Flow und Erweiterungen
+
+\subsubsection*{Region Growing\index{Region Growing}}
+
+gegeben: Graustufen-Bild, gesucht: zusammenhängende Regionen \\ Algorithmus in Pseudocode:
+\begin{enumerate}
+\item wähle Saatpunkt $p_0 = (u_0,v_0)$
+\item initialisiere Region $R = \{ p_0 \}$, wähle Schwelle $\varepsilon$
+\item solange $\exists p \in R$, $q \not\in R$ mit $||p-q|| \leq 1$ und $|Img(p_0) - Img(q)| \leq \varepsilon$ mache $R = R \cup \{ q \}$
+\end{enumerate}
+
+\subsubsection*{Kanten}
+
+Vom Menschen konstruierte Umgebungen:
+\begin{itemize}
+\item gut strukturiert
+\item viele gerade Linien (Wände, Türen, Schränke)
+\item einfache Segmentierung / 3D-Rekonstruktion
+\item viele Informationen in einem einzigen Merkmal
+\end{itemize}
+Vorgehensweise: $$\textrm{Bildaufnahme} \quad \Rightarrow \quad \textrm{Filtern, Binarisieren} \quad \Rightarrow \quad \textrm{Pixel } \to \textrm{ Kantensegmente}$$
+
+\subsubsection*{Pixel $\to$ Kanten}
+
+\textbf{Iterative Endpoint Fit:}\index{Iterative Endpoint Fit} \\[0,1cm]
+gegeben: Punkte $P$, Linien $L = \{ \}$, Distanzschwelle $d$
+\begin{itemize}
+\item Fine $x_1$, $x_2$ aus $P$ mit $||x_1 - x_2|| = \max$; \\ verbinde sie durch Linie $l_0 = \{x_1,x_2\}$; $L=L \cup \{l_0\}$
+\item Entferne $x_1$, $x_2$ aus $P$
+\item Für alle $l \in L$:
+\begin{itemize}
+\item Finde $x \in P$ mit $||l-x|| = \max$
+\item Wenn $||l-x|| < d$:
+\begin{itemize}
+\item Ordne $x$ als Mitgliedpunkt $l$ zu
+\item Entferne $x$ aus $P$
+\end{itemize}
+\item Sonst
+\begin{itemize}
+\item Brich $l$ in $l_1 = \{ x_1 , x\}$ und $l_2 = \{x , x_2 \}$ auf
+\item Andere Mitgliedspunkte von $l$ wieder in $P$
+\end{itemize}
+\item $P$ leer $\Rightarrow$ Abbruch, sonst weiter
+\end{itemize}
+\item Lösche Linien mit weniger als $n$ Punkten
+\end{itemize}
+
+\textbf{Hough-Transformation:}\index{Hough-Transformation}
+\begin{itemize}
+\item Ziel: Erkennung gerader Linien im Bild
+\item Ansatz: Stelle Linie durch Normalenvektor (Länge, Winkel) in Polarkoordinaten dar (Sinus-Kosinus-Kurve)
+\item Kurven für kollineare Punkte schneiden sich in genau zwei Punkten $$r = x \cdot \cos(\theta) + y \cdot \sin(\theta)$$
+\item Transformation in den Hough-Raum: Additives Eintragen aller Sinus-Kosinus-Kurven für alle Pixel in ein Histogramm
+\item Finden der Maxima bzw. Cluster von "{}Treffern"{} im Hough-Raum
+\item Brute-Force-Ansatz; für ein $n \times n$-Bild liegt die Laufzeit in $O(n^3)$
+\end{itemize}
+Unterschied zur Regressionsanalyse: Die Bestimmung der Regressionsgerade ist das geeignetere Verfahren, wenn schon klar ist, welche Pixel eine Gerade bilden sollen; dann ist die Regressionsgerade die optimale Gerade im Sinne der Summe der Fehlerquadrate. Die Regressionsgerade kann jedoch keine Segmentierung vornehmen. Dahingegen lassen sich mit der Hough-Transformation in beliebigen Bildern geradlinige Strukturen berechnen; die punkte dazu müssen jedoch verhältnismäßig exakt auf einer Linie liegen.
+
+\subsubsection*{Punktmerkmale}
+
+Kanten/Konturen/Farbe können nicht immer für die Segmentierung herangezogen werden. Texturierte Objekte lassen sich in der Regel nicht durch die bislang vorgestellten Verfahren segmentieren. Lösung: Verwendung von \textsl{lokalen} Punktmerkmalen (auch genannt: Textmerkmale):
+\begin{itemize}
+\item Harris Corner Detector
+\item Shi-Tomasi Features
+\item SIFT-Features
+\item Maximally Stable Extremal Regions
+\end{itemize}
+Punktmerkmal: $(2n+1) \times (2n+1)$-Pixel-Block um Pixel $p$. Fast immer basierend auf Grauwertbildern. Gewünschte Eigenschaft: Wiedererkennbarkeit \\ $\Rightarrow$ hoher Gradient in mehrerer Richtungen \\[0,1cm]
+\textbf{Harris Corner Detector}\index{Harris Corner Detector}: \\
+Sind die Eigenwerte der Matrix $$A = \left( \begin{array}{cc} \left( \frac{\partial Img(x,y)}{\partial x} \right)^2 & \frac{\partial Img(x,y)}{\partial x} \frac{\partial Img(x,y)}{\partial y} \\ \frac{\partial Img(x,y)}{\partial x} \frac{\partial Img(x,y)}{\partial y} & \left( \frac{\partial Img(x,y)}{\partial y} \right)^2 \end{array} \right)$$ groß, dann verursacht eine kleine Bewegung in beliebiger Richtung eine große Grauwertänderung. \\ Finden von Ecken durch Suche nach lokalen Maxima in: $$R = det(A) - k \cdot trace(A)^2 \quad , \quad k \thickapprox 0,04$$
+Häufiges Problem:
+\begin{itemize}
+\item Wiederfinden bzw. Zuordnung von Punktmerkmalen für:
+\begin{itemize}
+\item Objekterkennung auf der Basis von Punktmerkmalen
+\item Stereo-Sehen bzw. "{}Structure from Motion"{} (Korrespondenzproblem)
+\end{itemize}
+\item Lösung des Korrespondenzproblems erfolgt für Punktmerkmale durch Korrelationsverfahren:
+\begin{itemize}
+\item \textbf{Sum of Squared Differences}\index{Sum of Squared Differences} (SSD) wird minimal bei guter Übereinstimmung: $$\sum\limits_{i = -n}^n \sum\limits_{j = -n}^n (Img_0(x-i,y-j) - Img_1(x-i,y-j))^2$$
+\item \textbf{Sum of Absolute Differences}\index{Sum of Absolute Differences} (SAD) wird minimal bei guter Übereinstimmung: $$\sum\limits_{i = -n}^n \sum\limits_{j = -n}^n |Img_0(x-i,y-j) - Img_1(x-i,y-j)|$$
+\item \textbf{(Zero Mean) Cross Correlation}\index{(Zero Mean) Cross Correlation} wird maximal bei guter Übereinstimmung: $$\sum\limits_{i = -n}^n \sum\limits_{j = -n}^n (Img_0(x-i,y-j)- \overline{Img_0})(Img_1(x-i,y-j)- \overline{Img_1})$$ wobei $$\overline{Img} \, : \, \textrm{Durchschnitt}$$
+\item \textbf{Zero Mean Normalized Cross Correlation}\index{Zero Mean Normalized Cross Correlation} wird maximal bei guter Übereinstimmung: $$\frac{\sum\limits_{i=-n}^{n}\sum\limits_{j=-n}^{n}Img_1(u_1 + i, v_1 + j) - \overline{Img_1}(u_1,v_1,n)) \cdot (Img_2(u_2 + i, v_2 + j) - \overline{Img_2}(u_2,v_2,n))}{\sqrt{\sum\limits_{i=-n}^n \sum\limits_{j=-n}^n (Img_1(u_1 + i, v_1 + j) - \overline{Img_1}(u_1,v_1,n))^2 \sum\limits_{i=-n}^n \sum\limits_{j=-n}^n Img_2(u_1 + i, v_1 + j) - \overline{Img_2}(u_1,v_1,n))^2} }$$
+wobei $$\overline{Img}(u,v,n) = \frac{1}{(2n+1)^2} \sum\limits_{i=-n}^n \sum\limits_{j=-n}^n Img(u+i,v+j)$$
+\end{itemize}
+\end{itemize}
+Für die Objekterkennung geschieht das Wiederfinden oftmals unter Verwendung:
+\begin{itemize}
+\item der Hauptkomponentenanalyse oder engl. \textsl{Principal Component Analysis} (PCA) und Nearest-Neighbor- bzw. $k$-Nearest-Neighbor-Klassifikator
+\item von Neuronalen Netzen
+\item oder Kombinationen (zuerst PCA zur Kompression, dann SVM (\textsl{Support Vector Machine}) zur Klassifikation)
+\end{itemize}
+
+\subsection{Geometrische 2D-Transformationen}
+
+\subsubsection*{Translation}\index{Translation}
+
+Translation eines 2D-Vektors: $$\left( \begin{array}{c} x_0 \\ y_0 \end{array} \right) + \left( \begin{array}{c} x \\ y \end{array} \right) = \left( \begin{array}{c} x_0 + x \\ y_0 + y \end{array} \right)$$
+
+\subsubsection*{Rotation}\index{Rotation}
+
+\begin{itemize}
+\item o.B.d.A. auf Einheitsvektor zurückführbar (Basistransformation)
+\item Konvention: Rechtskoordinatensystem
+\item Rotation von $(x_0,y_0)$ um Winkel $\beta$ mit Ergebnis $(x,y)$:
+\end{itemize}
+Aus Additionstheorem:
+\begin{eqnarray*}
+x &=& \cos(\alpha + \beta) = \cos(\alpha) \cos(\beta) - \sin(\alpha) \sin(\beta) \\ y &=& \sin(\alpha + \beta) = \sin(\beta) \cos(\alpha) + \cos(\beta) \sin(\alpha)
+\end{eqnarray*}
+und mit $(x_0,y_0) = (\cos(\alpha), \sin(\alpha))$:
+$$\left( \begin{array}{c} x \\ y \end{array} \right) = \left( \begin{array}{rr} \cos(\beta) & -\sin(\beta) \\ \sin(\beta) & \cos(\beta) \end{array} \right) \left( \begin{array}{c} x_0 \\ y_0 \end{array} \right)$$
+
+\subsubsection*{Homogene Koordinaten}
+
+Homogene Koordinaten $$h = (h_0,h_1, \dots, h_i, h_{i+1})$$ eines Punktes $p$ im $R^i$ mit $$p = (p_0,\dots,p_i)$$ sind Zahlen, für die gilt: $$p_k = \frac{h_k}{h_{i+1}} \quad \forall 0 \leq k \leq i$$
+
+\subsubsection*{Homogene 2D-Transformationen}
+
+Transformationen definiert durch Rotation $R$ und Translation $t$.
+$$\myvectwo{x}{y} = R \myvectwo{x_0}{y_0} + t = \myvecfour{r_{11}}{r_{12}}{r_{21}}{r_{22}} \myvectwo{x_0}{y_0} + \myvectwo{t_x}{t_y}$$
+Darstellung mit Hilfe homogener Koordinaten und einer geschlossenen Transformationsmatrix:
+$$\myvecthree{x}{y}{1} = \left( \begin{array}{cc|c} & R & t \\ \hline 0 & 0 & 1 \end{array} \right) \myvecthree{x_0}{y_0}{1} = \left( \begin{array}{cc|c} r_{11} & r_{12} & t_x \\ r_{21} & r_{22} & t_y \\ \hline 0 & 0 & 1 \end{array} \right) = A \myvecthree{x_0}{y_0}{1}$$
+
+\subsubsection*{Partikel Filter und 2D-Tracking}
+
+Für Tracking-Applikationen wird oftmals das Kalmanfilter, das Partikel Filter oder Kombinationen aus beiden verwendet. Vorteile des Partikel Filters gegenüber dem Kalmanfilter:
+\begin{itemize}
+\item Es kann automatisch mehrere, parallel existierende Hypothesen halten $\Rightarrow$ geringere Gefahr in lokalen Minima zu verharren.
+\item Es kann beliebige Wahrscheinlichkeitsdichten modellieren und dadurch nichtlineare Bewegungen auf natürliche Weise verfolgen.
+\end{itemize}
+Nachteil: Rechenaufwand ist proportional zur Anzahl der notwendigen Partikel, welche (bei konstanter Auflösung) mit der Dimension des Konfigurationsraums exponentiell steigt. \\ Im Kern des Partikel Filters befinden sich ein Modell mit Konfigurationsraum $R^n$. \\ \textit{Eingabe:} Beobachtungen $z$; hier: Bilder einer Videosequenz \\ \textit{Ausgabe:} Schätzung der Konfiguration $s \in R^n$, die den aktuellen Beobachtungen $z$ entspricht \\ \textit{Zentrale Funktion:} Bewertungsfunktion $\myprob{z}{s}$, die die a-posteriori Wahrscheinlichkeit berechnet, dass $s$ die zu $z$ passende Konfiguration ist. \\
+Das Partikel Filter modelliert die Wahrscheinlichkeitsdichtefunktion oder engl. \textsl{probability density function (pdf)} durch eine feste Anzahl von $N$ Partikeln. Die Wahrscheinlichkeitsdichtefunktion beschreibt die a-posteriori Wahrscheinlichkeiten für den Konfigurationsraum. Jedes Partikel ist ein Paar $(s_i, \pi_i)$, wobei $s_i$ eine Konfiguration ist und $\pi_i$ die dazugehörige a-posteriori Wahrscheinlichkeit mit $\sum_{i=1}^n \pi_i = 1$. Die aktuelle Schätzung des Partikel Filters erfolgt über das gewichtete Mittel über alle Partikel: $$\overline{s} = \sum\limits_{i=1}^{N} \pi_i \cdot s_i$$
+
+\textbf{\textsl{Algorithmus}}
+
+\begin{enumerate}
+\item Initialisiere alle $N$ Partikel (z.B. mit Gleichverteilung)
+\item Verarbeite neue Beobachtungen (z.B. Vorverarbeitung neuer Bilder)
+\item Ziehe $N$ Partikel aus der letzten Generation, proportional zu ihrer Wahrscheinlichkeit $\pi_i$, und für jedes dieser Partikel:
+\begin{itemize}
+\item Berechne neue Konfiguration auf Basis der alten Konfiguration durch Addition normalverteilten Rauschens und evtl. durch Hinzunahme eines dynamischen Modells.
+\item Berechne für diese neue Konfiguration die neue a-posteriori Wahrscheinlichkeit mit Hilfe der Bewertungsfunktion $\myprob{z}{s}$
+\end{itemize}
+\item Berechne aktuelle Schätzung $\overline{s}$ über alle Partikel
+\item Fahre fort mit Schritt 2
+\end{enumerate}
+
+\textbf{\textsl{Einfaches Beispiel für eine Bewertungsfunktion}}
+
+\begin{itemize}
+\item Anwendung: \\ 2D-Tracking einer dichten, in etwa quadratischen Fläche von in etwa fester Größe in einem binarisierten Bild
+\item Modell: \\ Quadrat fester Größe mit Kantenlänge $k$ mit Konfigurationsraum $R^2$ (Koordinaten $u,v$ im Bild)
+\item Bewertungsfunktion: $$\myprob{z}{s} \propto e^{- \frac{1}{2 \sigma^2} \left( k^2 - \sum_{m \in M} g_m \right)}$$ wobei $M$ die Menge aller Pixel im binarisierten Bild $z$ (Beobachtungen) im durch $s$ (Konfiguration) definierten Quadrat beschreibt und $g_m$ deren Intensität aus $\{0,1\}$.
+\end{itemize}
+
+\subsection{Geometrische 3D-Transformationen}
+
+Grundlage von Sensorik und Aktorik: Beschreibung von Objektposen (Position, Rotation)
+\begin{itemize}
+\item Pose des messenden Systems im Raum
+\item Pose mehrerer Sensoren zueinander
+\item Pose sensorisch erfasster Objekte relativ zum Sensor
+\item Pose von Aktoren (Greifer, Lötlampen etc.) im Raum und relativ zum manipulierten Objekt
+\item Gelenkwinkelstellungen im Roboterarm
+\end{itemize}
+Anforderungen:
+\begin{itemize}
+\item geschlossene Ausdrücke
+\item Invertierbarkeit
+\item Interpolation
+\end{itemize}
+Zwei Systeme haben sich durchgesetzt:
+\begin{itemize}
+\item Homogene Geometrie (für Translationen und Rotationen)
+\item Quaternionendarstellung (nur für Rotationen)
+\end{itemize}
+
+\subsubsection*{Translation}\index{Translation}
+
+Translation eines 3D-Vektors: $$\myvecthree{x_0}{y_0}{z_0} + \myvecthree{x}{y}{z} = \myvecthree{x_0 + x}{y_0 + y}{z_0 + z}$$
+
+\subsubsection*{Rotation}\index{Rotation}
+
+\begin{itemize}
+\item o.B.d.A. auf Einheitsvektor zurückführbar (Basistransformation)
+\item Konvention: Rechtskoordinatensystem
+\item Rotation von $(x_0,y_0,z_0)$ um Winkel $\beta$ mit Ergebnis $(x,y,z_0)$
+\end{itemize}
+Aus Additionstheorem:
+\begin{eqnarray*}
+x &=& \cos(\alpha + \beta) = \cos(\alpha) \cos(\beta) - \sin(\alpha) \sin(\beta) \\ y &=& \cos(\alpha + \beta) = \sin(\beta) \cos(\alpha) + \cos(\beta) \sin(\alpha)
+\end{eqnarray*}
+und mit $(x_0,y_0) = (\cos(\alpha), \sin(\alpha))$:
+$$\left( \begin{array}{c} x \\ y \end{array} \right) = \left( \begin{array}{rr} \cos(\beta) & -\sin(\beta) \\ \sin(\beta) & \cos(\beta) \end{array} \right) \left( \begin{array}{c} x_0 \\ y_0 \end{array} \right)$$
+$z_0$ invariant, da Rotation um $z$!
+
+\subsubsection*{Rotationsmatrix}\index{Rotationsmatrix}
+
+Rotationsmatrix allgemein: $$\myvecthree{x}{y}{z} = R \myvecthree{x_0}{y_0}{z_0}$$
+Rotation um $x$: $$R_x(\theta) = \myvecnine{1}{0}{0}{0}{\cos(\theta)}{- \sin(\theta)}{0}{\sin(\theta)}{\cos(\theta)}$$
+Rotation um $y$: $$R_y(\theta) = \myvecnine{\cos(\theta)}{0}{\sin(\theta)}{0}{1}{0}{- \sin(\theta)}{0}{\cos(\theta)}$$
+Rotation um $z$: $$R_z(\theta) = \myvecnine{\cos(\theta)}{- \sin(\theta)}{0}{\sin(\theta)}{\cos(\theta)}{0}{0}{0}{1}$$
+
+\textbf{\textsl{Eigenschaften von Rotationsmatrizen:}}
+\begin{itemize}
+\item regulär, invertierbar, Determinante $=1$
+\item jede beliebige Rotation im Raum kann durch drei Variablen beschrieben werden (Eulers Theorem)
+\item Einzelrotationen können als eine Matrix dargestelt werden: $$R_r(\gamma) R_q(\beta) R_p(\alpha) \myvecthree{x}{y}{z} \quad \textrm{mit} \quad p,q,r \in \{x,y,z\} = R_{pqr}(\alpha, \beta, \gamma) \myvecthree{x}{y}{z}$$
+\item damit reicht Angabe von $\alpha$, $\beta$, $\gamma$ zur Beschreibung der Rotation
+\item das macht natürlich nur Sinn, wenn eine Konvention für die Zuordnung $p$, $q$, $r$ zu den Achsen $x$, $y$, $z$ definiert wurde
+\end{itemize}
+Zwei grundlegend unterschiedliche Rotationstypen:
+\begin{itemize}
+\item Rotation um mitgedrehte Achsen (Euler-Winkel\index{Euler-Winkel})
+\item Rotation um raumfeste Achsen (Roll Pitch Yaw\index{Roll Pitch Yaw})
+\end{itemize}
+Konventionen zur Erstellung von Rotationsmatrizen:
+\begin{itemize}
+\item Standard-Beispiel für Euler-Winkel: \\ Zuerst um die $x$-Achse, dann um die mitgedrehte $y$-Achse, dann um die (zweimal) mitgedrehte $z$-Achse $$R_{X'Y'Z'}(\alpha , \beta , \gamma) = R_X(\alpha) R_Y(\beta) R_Z(\gamma)$$
+\item Standard-Beispiel für raumfeste Achsen: $$R_{XYZ} = R_Z(\alpha) R_Y(\beta) R_X(\gamma)$$
+\end{itemize}
+
+\subsubsection*{Homogene 3D-Transformation}
+
+Transformation definiert durch Rotation $R$ und Translation $t$:
+$$\myvecthree{x}{y}{z} = R \myvecthree{x_0}{y_0}{z_0} + t = \myvecnine{r_{11}}{r_{12}}{r_{13}}{r_{21}}{r_{22}}{r_{23}}{r_{31}}{r_{32}}{r_{33}} \myvecthree{x_0}{y_0}{z_0} + \myvecthree{t_x}{t_y}{t_z}$$
+Darstellung mit Hilfe homogener Koordinaten und einer geschlossenen Transformationsmatrix:
+$$\myvecqfour{x}{y}{z}{1} = \left( \begin{array}{ccc|c} &&& \\ & R && t \\ &&& \\ \hline 0 & 0 & 0 & 1 \end{array} \right) \myvecqfour{x_0}{y_0}{z_0}{1} = \left( \begin{array}{ccc|c} r_{11} & r_{12} & r_{13} & t_x \\ r_{21} & r_{22} & r_{23} & t_y \\ r_{31} & r_{32} & r_{33} & t_z \\ \hline 0 & 0 & 0 & 1 \end{array} \right) \myvecqfour{x_0}{y_0}{z_0}{1} = A \myvecqfour{x_0}{y_0}{z_0}{1}$$
+
+\textbf{\textsl{Probleme mit Rotationsmatrizen:}}
+\begin{itemize}
+\item hoch redundant
+\item rechenaufwendig
+\item Interpolation schwierig
+\item numerisch unrobust (Singularitäten, Rundungsfehler)
+\end{itemize}
+
+\subsubsection*{Quaternionen\index{Quaternionen}}
+
+Erweiterung der komplexen zahlen ins vierdimensionale. Definition: \\[0,1cm]
+Ein Quaternion $\textbf{q}$ ist eine Zahl
+\begin{eqnarray*}
+\quaternion &=& (q_x,q_y,q_z,q_w)(i,j,k,1)^T \\ &=& (\quaternion_v,q_w)(i,j,k,1)^T \\ &=& iq_x + jq_y + kq_z + q_w
+\end{eqnarray*}
+mit
+\begin{eqnarray*}
+i^2 &=& j^2 = k^2 = -1 \\ ij &=& -ji = k \\ jk &=& -kj = i \\ ki &=& -ik = j
+\end{eqnarray*}
+$q_w$ ist der Realteil, $\quaternion_v = (q_x,q_y,q_z)$ der Imaginärteil des Quaternions. Man schreibt einfach $(q_x,q_y,q_z,q_w)$ oder $(\quaternion_v,q_w)$. \\[0,1cm]
+Rechenregeln für Quaternionen: \\
+Norm: $$N(\quaternion) = \sqrt{\quaternion \overline{\quaternion}} = \sqrt{\overline{\quaternion}\quaternion} = \sqrt{q_x^2 + q_y^2 + q_z^2 + q_w^2}$$
+Quaternionen $\quaternion$ mit $N(\quaternion) = 1$ heißen Einheitsquaternionen\index{Einheitsquaternionen}. \\ Multiplikative Identität: $$I = (0,1)$$ Multiplikative Inverse: $$\quaternion^{-1} = \frac{\overline{\quaternion}}{N^2(\quaternion)}$$
+Rotation mit Quaternionen:
+\begin{itemize}
+\item Einheitsquaternion $\quaternion$ ist definiert durch Rotationsachse $u$ mit $|u| = 1$ und Winkel $\theta$: $$\quaternion = \left( u \sin \frac{\theta}{2} \, , \, \cos \frac{\theta}{2} \right)$$
+\item Quaternion \textbf{a} ist definiert durch zu rotierenden Vektor $v$: $$\textbf{a} = (v \, , \, 0)$$
+\item Das Produkt $\textbf{qa}\overline{\textbf{q}}$ rotiert $v$ um die Achse $u$ mit dem Winkel $\theta$.
+\end{itemize}
+Interpolation zwischen zwei Quaternionen:
+\begin{itemize}
+\item Sphärische Lineare Interpolation (SLERP)
+\item Berechnet für $t \in [0,1]$ die kürzeste Verbindung auf der vierdimensionalen Einheitssphäre zwischen $q$ und $r$.
+\item Analytisch: $$SLERP(q,r,t) = q(rq^{-1})^t$$
+\item Numerisch: $$SLERP(q,r,t) = q \frac{\sin((1-t)\theta)}{\sin(\theta)} + r \frac{\sin(t \theta)}{\sin(\theta)}$$ mit Winkel $\theta$ zwischen $r$ und $q$.
+\end{itemize}
+Quaternion $\to$ Rotationsmatrix: $$\quaternion = (q_x,q_y,q_z,q_w) \Rightarrow M_q = \myvecnine{1-2(q_y^2 + q_z^2)}{2(q_xq_y - q_wq_z)}{2(q_xq_z + q_wq_y}{2(q_xq_y + q_wq_z}{1-2(q_x^2 + q_z^2)}{2(q_yq_z - q_wq_x)}{2(q_xq_z - q_wq_y}{2(q_yq_z + q_wq_x}{1-2(q_x^2 + q_y^2)}$$
+Rotationsmatrix $\to$ Quaternion:
+\begin{eqnarray*}
+q_w &=& \frac{1}{2} \sqrt{1 + \sum\limits_{i=1}^3 m_{ii}} \\ q_x &=& \frac{(m_{32} - m_{23})}{4q_w} \\ q_y &=& \frac{m_{13} - m_{31})}{4q_w} \\ q_z &=& \frac{(m_{21} - m_{12})}{4q_w}
+\end{eqnarray*}
+
+\textbf{\textsl{Vor- und Nachteile}} \\
+Vorteile:
+\begin{itemize}
+\item Rotation direkt um gewünschte Drehachse
+\item Interpolation möglich
+\item weniger Rechenaufwand
+\item keine Redundanz $\Rightarrow$ numerisch stabiler, weniger Gefahr für Singularitäten
+\end{itemize}
+Nachteil:
+\begin{itemize}
+\item nur Rotation berechenbar $\Rightarrow$ Kombination mit Matrizen nötig $\Rightarrow$ Rechenaufwand für Umwandlungen
+\end{itemize}
+
+\subsubsection*{Realistischeres Kameramodell}
+
+Lochkameramodell vereinfacht die realen Verhältnisse stark. Deshalb werden in der Praxis Erweiterungen des Lochkameramodells verwendet. Zunächst einige Definitionen:
+\begin{description}
+\item[Optische Achse:] Gerade durch das Projektionszentrum, senkrecht zur Bildebene
+\item[Bildhauptpunkt $C(c_x \, , \, c_y)$:] Schnittpunkt der optischen Achse mit der Bildebene
+\end{description}
+Koordinatensysteme:
+\begin{description}
+\item[Bildkoordinatensystem:\index{Bildkoordinatensystem}] 2D-Koordinatensystem, Einheit [Pixel], Vereinbarung für die Vorlesung (gilt für die meisten Kameratreiber): Ursprung in der linken oberen Ecke des Bildes, $u$-Achse zeigt nach rechts, $v$-Achse zeigt nach unten.
+\item[Kamerakoordinatensystem:\index{Kamerakoordinatensystem}] 3D-Koordinatensystem, Einheit [mm], Ursprung liegt im Projektionszentrum, Achsen parallel zu den Achsen des Bildkoordinatensystems, d.h. $x$-Achse nach rechts, $y$-Achse nach unten und die $z$-Achse gemäß der Dreifingerregel für ein rechtshändiges Koordinatensystem nach vorne.
+\item[Weltkoordinatensystem:\index{Weltkoordinatensystem}] 3D-Koordinatensystem, Einheit [mm], Basiskoordinatensystem, das beliebig im Raum liegen kann.
+\end{description}
+Begriffe:
+\begin{description}
+\item[Intrinsische Kameraparameter:] Brennweite, Bildhauptpunkt, Parameter für die Beschreibung radialer/tangentialer Linsenverzerrung; definieren die nicht (eindeutig) umkehrbare Abbildung vom Kamerakoordinatensystem in das Bildkoordinatensystem.
+\item[Extrinsische Kameraparameter:] Definieren die Transformation vom Kamerakoordinatensystem in das Weltkoordinatensystem, im Allgemeinen durch eine Rotation $R$ und eine Translation $t$.
+\end{description}
+Vereinfachungen des Lochkameramodells:
+\begin{itemize}
+\item Ursprung des Bildkoordinatensystems ist identisch mit dem Bildhauptpunkt
+\item Pixel werden als quadratisch angenommen
+\item keinerlei Modellierung der Linsenverzerrung
+\item es existiert kein Weltkoordinatensystem bzw. es ist identisch mit dem Kamerakoordinatensystem, d.h. es werden keine extrinsischen Kameraparameter modelliert
+\end{itemize}
+Brennweite:
+\begin{itemize}
+\item In der Praxis wird die Umrechnung von [mm] nach [Pixel] in den/die Parameter für Brennweite mit aufgenommen.
+\item Da Pixel nicht mehr als quadratisch sondern als rechteckig angenommen werden, gibt es deshalb für jede Richtung einen Parameter, also: $f_x$, $f_y$.
+\item Die Parameter $f_x$, $f_y$ sind dann das Produkt aus der tatsächlichen Brennweite mit Einheit [mm] und dem jeweiligen Umrechnungsfaktor mit Einheit [Pixel/mm].
+\item Die Einheit für die Parameter $f_x$, $f_y$ ist somit [Pixel].
+\end{itemize}
+Die Abbildung vom Kamerakoordinatensystem in das Bildkoordinatensystem, ausschließlich mit den intrinsischen Parametern, ist dann definiert durch: $$\myvectwo{u}{v} = \myvectwo{c_x}{c_y} + \frac{1}{Z} \cdot \myvectwo{f_x \cdot X}{f_y \cdot Y}$$ oder als Matrixmultiplikation mit Kalibriermatrix $K$ auf homogenen Koordinaten: $$\myvecthree{u \cdot w}{v \cdot w}{w} = K \cdot \myvecthree{X}{Y}{Z} \qquad K = \myvecnine{f_x}{0}{c_x}{0}{f_y}{c_y}{0}{0}{1}$$
+Extrinsische Kamerakalibrierung:
+\begin{itemize}
+\item Ist definiert durch eine Koordinatentransformation bestehend aus Rotation und Translation.
+\item Koordinatentransformation vom Weltkoordinatensystem in das Kamerakoordinatensystem: $$x_c = Rx_w + t$$
+Koordinatentransformation vom Kamerakoordinatensystem in das Weltkoordinatensystem: $$x_w = R^T x_c - R^T t$$
+\item $3 \times 4$ Gesamt-Projektionsmatrix $P$ (intrinsisch und extrinsisch) auf homogenen Koordinaten: $$\myvecthree{u \cdot w}{v \cdot w}{w} = P \cdot \myvecqfour{X}{Y}{Z}{1} \qquad P = (K \, R \, | \, K \, t)$$
+\end{itemize}
+
+\subsubsection*{Kamerakalibrierung\index{Kamerakalibrierung}}
+
+Die Kalibrierung einer Kamera bedeutet die Bestimmung ihrer Parameter bezüglich eines gewählten Kameramodells. Die Bestimmung der intrinsischen Parameter ist unabhängig vom Aufbau; solange Zoom und Fokus der Kamera gleich bleiben, verändern sich diese Parameter nicht. Die Bestimmung der extrinsischen Parameter ist abhängig von der Wahl des Weltkoordinatensystems und ändert sich je nach Aufbau. \\
+Ist die Kamera kalibriert, dann liegt die Abbildungsfunktion $f$ vor, die einen Punkt vom Weltkoordinatensystem eindeutig in das Bildkoordinatensystem abbildet: $$f \, : \, R^3 \to R^2$$
+$f$ ist definiert durch die Projektionsmatrix $P$ und anschließender Transformation der homogenen Koordinaten durch Division durch $w$. Die Inverse Abbildung bildet einen Punkt im Bildkoordinatensystem auf eine Gerade im Weltkoordinatensystem ab, die durch das Projektionszentrum verläuft. \\[0,1cm]
+Verfahren zur Kamerakalibrierung:
+\begin{itemize}
+\item Direkte Lineare Transformation (DLT)
+\item Erweiterungen der DLT, welche Linsenverzerrung modellieren
+\end{itemize}
+gesucht: $3 \times 4$-Matrix, hat also 12 Unbekannte; Verfahren Testfeldkalibrierung:\index{Testfeldkalibrierung}
+\begin{itemize}
+\item Bestimmung einer Menge von Punktkorrespondenzen: 3D-Punkt in einem gewählten Weltkoordinatensystem und 2D-Punkt im Bildkoordinatensystem
+\item 3D-Punkte sind durch Verwendung eines geeigneten Kalibrierobjekts oder -musters a-priori bekannt
+\item 2D-Punkte werden durch Methoden der Bildverarbeitung berechnet
+\end{itemize}
+benötigt: 6 bekannte Objektpunkte, da jede Punktkorrespondenz zwei Gleichungen liefert \\
+Bedingung: 3D-Punkte dürfen nicht koplanar liegen, d.h. sie müssen einen dreidimensionalen Raum aufspannen \\
+Möglichkeiten:
+\begin{itemize}
+\item Verwendung eines 2D-Musters, das in mindestens zwei verschiedenen Tiefen präsentiert wird.
+\item Verwendung eines geeigneten 3D-Kalibrierobjekts.
+\end{itemize}
+
+\subsubsection*{Direkte Lineare Transformation}
+
+Ein Standard-Verfahren für die Berechnung der Projektionsmatrix $P$ ist die Direkte Lineare Transformation (DLT)
+$$\myvecthree{u \cdot w}{v \cdot w}{w} = P \cdot \myvecqfour{X}{Y}{Z}{1} \qquad P = (K \, R \, | \, K \, t) = \left( \begin{array}{cccc} p_1 & p_2 & p_3 & p_4 \\ p_5 & p_6 & p_7 & p_8 \\ p_9 & p_{10} & p_{11} & p_{12} \end{array} \right)$$
+\begin{eqnarray*}
+\Rightarrow u &=& \frac{p_1X + p_2Y + p_3Z + p_4}{p_9X + p_{10}Y + p_{11}Z + p_{12}} \\
+v &=& \frac{p_5X + p_6Y + p_7Z + p_8}{p_9X + p_{10}Y + p_{11}Z + p_{12}}
+\end{eqnarray*}
+o.B.d.A. kann ein Parameter normiert werden. Üblicherweise wird $p_{12} = 1$ gewählt.
+\begin{eqnarray*}
+p_1X + p_2Y + p_3Z + p_4 &=& up_9X + up_{10}Y + up_{11}Z + u \\
+p_5X + p_6Y + p_7Z + p_8 &=& vp_9X + vp_{10}Y + vp_{11}Z + v
+\end{eqnarray*}
+Formuliert als überbestimmtes LGS $Ax = b$ mit $n \geq 6$ Punktkorrespondenzen, das beispielsweise mit Hilfe der Normalengleichung gelöst werden kann:
+$$A = \left( \begin{array}{ccccccccccc} X_1 & Y_1 & Z_1 & 1 & 0 & 0 & 0 & 0 & -u_1X_1 & -u_1Y_1 & -u_1Z_1 \\ 0 & 0 & 0 & 0 & X_1 & Y_1 & Z_1 & 1 & -v_1X_1 & -v_1Y_1 & -v_1Z_1 \\ \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots \\ X_n & Y_n & Z_n & 1 & 0 & 0 & 0 & 0 & -u_nX_n & -u_nY_n & -u_nZ_n \\ 0 & 0 & 0 & 0 & X_n & Y_n & Z_n & 1 & -v_nX_n & -v_nY_n & -v_nZ_n \end{array} \right) \quad x = \myvecthree{p_1}{\vdots}{p_{11}} \quad b = \left( \begin{array}{c} u_1 \\ v_1 \\ \vdots \\ u_n \\ v_n \end{array} \right)$$
+
+\subsection{3D Bildverarbeitung}
+
+\subsubsection*{Stereokonstruktion}
+
+gegeben:
+\begin{itemize}
+\item zwei Kameras (durch ihre Zentren $C$ und $C'$) mit Projektionsmatrizen $P$ und $P'$
+\item zwei Abbilder $x$ und $x'$ des Punktes $X$
+\item dann kann $X$ rekonstruiert werden
+\end{itemize}
+Triangulation zwischen linker und rechter Kamera möglich durch Kenntnis der Kameraparameter. Eine Möglichkeit zur Berechnung von 3D-Punkten aus Bildpunkt-Korrespndenzen $x$, $x'$:
+\begin{itemize}
+\item Aufstellen der beiden Geraden $g$, $g'$ der möglichen Punkte zu $x$, $x'$ im Weltkoordinatensystem mit Hilfe der Projektionsmatrizen $P$, $P'$:
+\begin{eqnarray*}
+g \, : \, x &=& a + r \cdot u \\ g' \, : \, x &=& b + s \cdot v
+\end{eqnarray*}
+\item Berechnung des optimalen "{}Schnittpunktes"{} $S$ durch Lösung des überbestimmten LGS $Ax = c$ mit: $$A = \left( \begin{array}{cc} u_1 & -v_1 \\ u_2 & -v_2 \\ u_3 & -v_3 \end{array} \right) \quad , \quad x = \myvectwo{r'}{s'} \quad , \quad c = b-a \qquad s = \frac{a + r' \cdot u + b + s' \cdot v}{2}$$
+\end{itemize}
+3D-Tracking von Kopf und Händen auf der Basis von Hautfarbe, Region-Growing und Stereokalibrierung.
+
+\subsubsection*{Epipolargeometrie\index{Epipolargeometrie}}
+
+\mypic{8}{kameramodell}
+
+Zusammenhang zwischen zwei Kameras ist gegeben durch die Epipolargeometrie. Die Schnittpunkte $e$ und $e'$ der Geraden durch die Projektionszentren mit den Bildebenen nennt man Epipole\index{Epipol}.
+\begin{description}
+\item[Epipolarebene $\pi(X)$:] Ebene, die durch $C$, $C'$ und Szenenpunkt $X$ aufgespannt wird.
+\item[Epipolarlinie $l'(x)$:] Schnittgerade von $\pi(X)$ mit Bildebene.
+\end{description}
+Alle Punkte $X$, die auf $x$ in Kamera 1 abgebildet werden, werden auf einen Punkt der Linie $l'(x)$ in Kamera 2 abgebildet. Alle Epipolarlinien eines Kamerasystems schneiden sich in den Epipolen $e$ und $e'$. \\
+\textsl{Nutzen:} Einschränkung des Korrespondenzproblems von zwei Dimensionen auf eine Dimension, da nach entsprechenden Merkmalen nur noch entlang der Epipolarlinie gesucht werden muss:
+\begin{itemize}
+\item höhere Robustheit (weniger falsche Korrespondenzen)
+\item höhere Effizienz
+\end{itemize}
+
+\subsubsection*{Fundamentalmatrix\index{Fundamentalmatrix}}
+
+Mathematische Beschreibung der Epipolargeometrie erfolgt durch die Fundamentalmatrix. Eigenschaften der Fundamentalmatrix $F$:
+\begin{itemize}
+\item $3 \times 3$-Matrix
+\item Rang 2
+\item für alle Korrespondenzen $x$, $x'$ gilt: $$x'^TFx = 0$$ $x$ und $x'$ sind Bildpunkte in homogenen Koordinaten mit $w = 1$
+\end{itemize}
+Mit der Fundamentalmatrix lassen sich die Epipolarlinien berechnen: $$l = F^Tx' \qquad \textrm{und} \qquad l' = Fx$$ Für die Epipole gilt: $$Fe = 0 \qquad \textrm{und} \qquad F^Te' = 0$$ Hinweis: $l$ (bzw. $l'$) definieren eine 2D-Gerade wie folgt: \\ $lx = 0$ für alle Bildpunkte $x$ (in homogenen Koordinaten mit $w = 1$), die auf dieser Geraden liegen. \\
+Die Fundamentalmatrix lässt sich auf mehrere Arten berechnen:
+\begin{itemize}
+\item über Bildpunkt-Korrespondenzen in der linken und rechten Kamera
+\item bei bekannter intrinsischer und extrinsischer Kalibrierung der Kameras direkt über die Kalibriermatrizen $K$, $K'$ und der Essentialmatrix $E$, die durch die extrinsischen Parameter definiert ist
+\end{itemize}
+\textbf{\textsl{Berechnung über Bildpunkt-Korrespondenzen:}}
+$$x'^T Fx = 0 \quad , \quad x' = (x',y',z') \quad , \quad x = (x,y,z)$$
+\begin{eqnarray*}
+\Rightarrow \qquad \qquad x'x f_{11} + x'y f_{12} + x'f_{13} && \\ + \,\, y'x'f_{21} + y'yf_{22} + y'f_{23} && \\ + \,\, xf_{31} + yf_{32} + f_{33} &=& 0
+\end{eqnarray*}
+Für $n \geq 7$ Korrespondenzen $x$, $x'$:
+$$\underbrace{\left( \begin{array}{ccccccccc} x_1'x_1 & x_1'y_1 & x_1' & y_1'x_1 & y_1'y_1 & y_1' & x_1 & y_1 & 1 \\ \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots \\ x_n'x_n & x_n'y_n & x_n' & y_n'x_n & y_n'y_n & y_n' & x_n & y_n & 1 \end{array} \right)}_{A} \underbrace{\myvecqfour{f_{11}}{f_{12}}{\vdots}{f_{33}}}_{f} = 0$$
+$Af=0$ lösen z.B. mit Singulärwertzerlegung (SVD) \\
+\textbf{\textsl{Berechnung über Essentialmatrix:}} \\
+Essentialmatrix lässt sich durch die extrinsischen Parameter berechnen: \\
+gegeben:
+\begin{itemize}
+\item Kamera 1 mit $(I \, | \, 0)$ als Transformation (Identität)
+\item Kamera 2 mit $(R \, | \, t)$ als Transformation
+\end{itemize}
+Essentialmatrix $E$ lässt sich berechnen zu: $$E = [t]_xR = \myvecnineright{0}{-t_3}{t_2}{t_3}{0}{-t_1}{-t_2}{t_1}{0}$$ Für die Epipole gilt: $$e = KR^Tt \quad \textrm{und} \quad e' = K't$$
+Hat man die Essentialmatrix (z.B.über die extrinsischen Parameter) berechnet und die intrinsischen Parameter, d.h. Kalibriermatrizen $K$, $K'$, so lässt sich die Fundamentalmatrix berechnen zu: $$F = K'^{-T}EK^{-1}$$
+Hat man umgekehrt die Fundamentalmatrix bestimmt (z.B. über Bildpunkt-Korrespondenzen) und die intrinsischen Parameter, d.h. die Kalibriermatrizen $K$, $K'$, so lässt sich die Essentialmatrix berechnen zu: $$E = K'^TFK$$
+
+\subsubsection*{Stereo-Sehen}
+
+Weiter Eigenschaften der Fundamentalmatrix:
+\begin{itemize}
+\item Mit ihr lassen sich die Eingabebilder rektifizieren.
+\begin{itemize}
+\item Nach Rektifizierung verlaufen alle Epipolarlinien horizontal mit derselben $v$-Koordinate wie der Bildpunkt im anderen Kamerabild.
+\item Nach Korrespondenzen muss nur noch horizontal (in eine Richtung) gesucht werden.
+\end{itemize}
+\item Mit Hilfe der Essentialmatrix lassen sich die Projektionsmatrizen bis auf Skalierung genau rekonstruieren, mit Hilfe der Fundametalmatrix bis auf Skalierung und Projektion genau.
+\end{itemize}
+Rektifizierte Bilder haben den Vorteil, dass sich optimierte Korrelations-Algorithmen für die Lösung des Korrespondenzproblems verwenden lassen. $\Rightarrow$ Laufzeit unabhängig von der Fenstergröße \\
+Nachteile:
+\begin{itemize}
+\item Interpolation notwendig für die Berechnung der rektifizierten Bilder $\Rightarrow$ Qualitätsverlust
+\item Bilder je nach Aufbau stark verzerrt
+\end{itemize}
+Nach Lösung des Korrespondenzproblems können
+\begin{itemize}
+\item Punktwolken berechnet werden durch Triangulation, wie zuvor erläutert
+\item Tiefenbilder erzeugt werden durch Eintrag der Disparitäten (Differenz der $u$-Koordinaten für gefundene Korrespondenzen in den rektifizierten Bildern) in ein Graustufenbild: \\ $\Rightarrow$ Je höher der Grauwert, desto näher befindet sich der entsprechende 3D-Punkt zur Kamera
+\end{itemize}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,143 @@
+% !TeX root = summary.tex
+
+\newcommand{\myfbox}[1]{
+\begin{tabular}{|l|}
+\hline #1 \\ \hline
+\end{tabular}
+}
+
+\section{Kognition: Sensorik}
+
+\subsection{Kognitionsbegriff}
+
+\subsubsection*{Elemente des Kognitionsbegriffs\dots}
+
+Wahrnehmung (Perzeption); Repräsentation, Modelle, Gedächtnis; Lernen, Verstehen; Denken, Problemlösen; Sprachgebrauch; Selbstreflexion; Sensomotorische Steuerung (Bewusstsein; Emotionen, Gefühle; Motivationen)
+
+\subsubsection*{Elemente eines kognitiven Systems}
+
+\begin{center}
+\begin{tabular}{ccccc}
+\fbox{Perzeption} & $\Rightarrow$ & \fbox{Kognition} & $\Rightarrow$ & \fbox{Aktion} \\
+&& $\Downarrow \quad \Uparrow$ && \\
+&& \fbox{Wissensdatenbank} &&
+\end{tabular}
+\end{center}
+
+\begin{description}
+\item[Perzeption\index{Perzeption}] Aufnahme der Umwelt durch Sensoren (Taster, Kameras, Mikrofone, \dots)
+\item[Wissensdatenbank\index{Wissensdatenbank}] Repräsentation gelernter Zusammenhänge und Reaktionen darauf
+\item[Kognition\index{Kognition}] Auf der Wissensdatenbank arbeitende Algorithmen: Deduktion, Induktion, Lernen
+\item[Aktion\index{Aktion}] Ausführende Komponente (Textausgabe, Robotersystem, \dots)
+\end{description}
+
+\subsection{Sensorik}
+
+\begin{description}
+\item[Sensor\index{Sensor}] System, das eine physikalische Größe und deren Änderung in geeignete (in unserem Fall elektrische) Signale umwandelt.
+\item[Ziel] Erfassung der Umwelt (oft in nicht fest definierten Umgebungen)
+\item[Probleme] \quad
+\begin{itemize}
+\item Signalverarbeitung
+\item Sensorik liefert nur partielle Information: Wahl der Sensorik
+\item Sensorwerte sind vertauscht $\to$ statistische Verarbeitung
+\item Verwendung mehrerer Sensortypen in Multisensorsystemen: Fusion der der Meßwerte
+\item Modellierung: Abstraktionsstufen des Umweltmodells
+\end{itemize}
+\item[Sensortypen] \quad
+\begin{itemize}
+\item Mechanische Sensoren (z.B. Kraftmesser)
+\item Temperatursensoren
+\item Chemische Sensoren (z.B. H*-Ionen Sensor)
+\item Akustische Sensoren
+\item Magnetische Sensoren
+\item Gassensoren (z.B. Lambda-Sonde)
+\item u.a.
+\end{itemize}
+\end{description}
+
+\subsubsection{Sensor: Struktur}
+
+\begin{description}
+\item[Elementarsensor] Aufnahme einer Messgröße und Abbildung auf Signal.
+\item[Integrierter Sensor] zusätzliche Signalaufbereitung: Verstärkung, Filterung, Linearisierung, Normierung
+\item[Intelligenter Sensor] integrierter Sensor mit rechnergesteuerter Auswertung. Ausgang: verarbeitete Größe
+\end{description}
+
+\subsection{Sensoren kognitiver Systeme}
+
+\subsubsection{Sensortechnologie}
+
+Klassifikation von Sensoren nach ihrer Funktion:
+\begin{description}
+\item[Interner Sensor] Erfassung innerer Zustände. Bsp.: Positionssensoren, Geschwindigkeitssensoren
+\item[Externer Sensor] Information über Zustand der Umwelt. Bsp.: Taktile Sensoren, Abstandssensoren, Akustische Sensoren
+\end{description}
+
+\subsubsection{Interne Sensorik}
+
+\begin{description}
+\item[Einfacher Positionssensor: Potentiometer] Lineare Position oder Drehposition \\ Messung der abgefallenen Spannung $U$ oder des Widerstands $R$, dann $$U = ( R / R_{ges} ) \cdot U_{ges}$$ mit $R_{ges}$ als Gesamtwiderstand und $U_{ges}$ als Gesamtspannung \\ $U$ proportional zur Position $P$. $P = const \cdot U$
+\item[Positionssensoren: Opt. Codierer] Information über Position von Gelenken oder über die relative Position eines Fahrzeugs. \\ Prinzip:
+\begin{itemize}
+\item Lichtstrahl wird auf Photodetektor ausgerichtet
+\item auf einer Scheibe angebrachtes codiertes Muster unterbricht periodisch den Strahl
+\item die Unterbrechungen werden gemessen und evtl. der Code festgestellt
+\end{itemize}
+Bauarten: inkrementelle Codierung, absolute Codierung
+\item[Geschwindigkeitssensor: Tachogenerator] Gleichstromgenerator mit Ausgangsspannung $V_0$, Winkelgeschwindigkeit $\omega_s$: $$V_0 = K_t \cdot \omega_s$$
+Arbeitsprinzip: elektromagnetische Induktion (Faradays Gesetz) (\textsl{Analoges Ausgangssignal benötigt A/D-Wandler zur Weiterverarbeitung})
+\item[Beschleunigungsensoren: Silizium-Beschl.sensor] Messprinzip: seismische Masse \\ Mikrosystemtechnik: Ätzen einer trägen Masse und deren Aufhängungen in Silizium. \\ Auslenkung ändert mechanische Spannungen, welche den piezoresistiven Widerstandswert ändern. Widerstandswert messtechnisch erfassbar. Ursprüngliches Einsatzgebiet: Airbagauslösung im Kfz-Bereich. In der Robotik oft: Auslenkung zur Erdanziehung oder Lage im Raum.
+\item[Lagesensor] \quad
+\begin{itemize}
+\item Messung der Orientierung zum Erdmagnetfeld und des Kipp- und Neigungswinkels.
+\item Orientierung: magnetischer Kompass
+\item Kipp- und Neigungswinkel: Inklinometer
+\item Funktionsprinzip der Wasserwaage
+\item Nachteil: träge
+\item Alternativ: Gyroskop zur Messung der Winkelbeschleunigung (mechanischer Kreisel oder Faseroptisch)
+\end{itemize}
+\end{description}
+
+\subsubsection{Externe Sensorik}
+
+\begin{description}
+\item[Taktile Sensoren] Umweltinformation durch direktes Berühren von Objekten (physikalischer Kontakt zwischen Roboter und Werkstück) \\ Einsatz: Ermittlung
+\begin{itemize}
+\item geometrischer Größen: Lage, Orientierung, Form
+\item physikalischer Größen: Kräfte, Momenten, Druck
+\end{itemize}
+Hierzu dienen: tastende Sensoren, gleitende Sensoren, Kraft-Momenten-Sensoren \\ Beispiele:
+\begin{description}
+\item[künstliche Haut:] Array-Anordnungen
+\item[Dehnmeßstreifen:] Dehnmeßstreifen verformt sich bei Krafteinwirkung. Veränderung des ohmschen Widerstands
+\item[Drucksensoren:] Verkürzung von oder Entstehung neuer Strompfade bei Belastung
+\item[Gleitsensoren:] Information über Oberflächenbeschaffenheit und geom. Struktur
+\end{description}
+\item[Kraft-Momenten-Sensoren] Erfassung der Kräfte und Drehmomente zwischen Effektor und Handhabungsobjekt
+\item[Abstandssensoren] Messung von Abstand zwischen Sensor und Gegensatnd (Typen: optische, akustische, Radar)
+\end{description}
+
+\subsection{Beispiele}
+
+\textbf{Sensorik bei Robotergelenken}
+\begin{itemize}
+\item Gelenkwinkelstellung bei Roboterarmen / Laufmaschinen-Beinen
+\item Überwachung der Positionsgenauigkeit bei Greifern (Karlsruher Hand, Barrett-Hand) \\
+früher: mechanische Anschläge \\ heute: Bildverarbeitung, Achsencoder
+\end{itemize}
+
+\textbf{Sensorik bei autonomen Systemen}
+\begin{itemize}
+\item Positionsbestimmung und Navigation in dynamischer Umgebung. Einsatz von: Laserscanner, Ultraschallsensoren, Bildverarbeitung
+\item Bsp.: autonome Systeme Mortimer, Viper (IPR), HelpMate (TRC)
+\end{itemize}
+
+\textbf{Sensorik bei Laufmaschinen} \\ Sensorik zu Erfassung von: Hindernissen, Orientierung, Untergrundkontakt, Schwerpunkt
+
+
+
+
+
+
+

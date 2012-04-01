@@ -1,0 +1,191 @@
+% !TeX root = summary.tex
+
+\section{Maschinelles lernen}
+
+\subsection{Unsupervised Learning}
+
+\begin{itemize}
+\item Datensammlung und Bezeichnung kostenaufwendig und zeitverschwenderisch.
+\item Die Charaktermerkmale der Muster können sich ändern im Verlauf der Zeit.
+\item Vielleicht hat man keine Einsicht in die Struktur der Daten.
+\end{itemize}
+$\Rightarrow$ Die Klassen sind \underline{nicht} bekannt.
+
+\subsection{Mischdichten}
+
+\begin{itemize}
+\item Beispiele kommen von $c$ Klassen
+\item A priori Wahrscheinlichkeit $P(\omega_j)$
+\item Annahme: Die Formen der Klassenbedingten PDF (probability density function -- Wahrscheinlichkeitsdichtefunktion) $P(X | \omega_j , \theta_j)$ sind bekannt
+\item Unbekannter Parametervektor $\theta_1, \dots, \theta_c$
+\end{itemize}
+Problem: Haarige Mathematik \\ Vereinfachung / Approximation \\ Betrachte nur Mittel $\to$ Isodaten
+\begin{itemize}
+\item Wähle initiale $\mu_1, \dots, \mu_c$
+\item Klassifiziere $n$ Muster zu dem Mittel, das am nähesten liegt.
+\item Berechne die Mittel neu aus den Mustern der Klasse
+\item Mittel hat sich geändert? Gehe zu Schritt 2, sonst: stopp
+\end{itemize}
+Isodaten, Probleme:
+\begin{itemize}
+\item Die Wahl der initialen Mittel $\mu$.
+\item Wissen über die Anzahl der Klassen.
+\item Annahme über die Verteilung.
+\item Was bedeutet "{}nah"{}?
+\end{itemize}
+
+\subsection{Clustering}
+
+\begin{itemize}
+\item Ähnlichkeit
+\item Kriteriumsfunktion
+\item Muster in der selben Klasse sollten die Kriteriumsfunktion noch extremer machen, dies erfasst die Cluserqualität.
+\item Beispiel: Summe des Fehlerkriteriums: $$J = \sum\limits_{i=1}^c \sum\limits_{\max} || x - m_i ||^2$$
+\end{itemize}
+
+\subsection{Hierarchisches Clustering}
+
+\begin{itemize}
+\item $c$ muss nicht bestimmt werden
+\item Mittel müssen nicht erraten werden
+\item[(1)] Initialisiere $c := n$
+\item[(2)] Finde die nähesten Paare von eindeutigen Clustern $X_i$ und $X_j$
+\item[(3)] Vereinige sie und dekrementiere $c$
+\item[(4)] Wenn $c < C_{stop}$: stoppen, sonst: gehe zu Schritt (2)
+\end{itemize}
+
+\section{Neuronale Netze}
+
+\subsection{Wieso neuronale Netze?}
+
+\begin{itemize}
+\item Massiver Parallelismus
+\item Massive Randbedingungsgenugtuung für "{}krank"{}-definierte Eingaben
+\item Einfache Recheneinheiten
+\item Viele Prozesseinheiten, viele Verbindungen
+\item Einheitlichkeit ($\to$ Sensorverschmelzung)
+\item Nichtlineare Klassifizierer / Abbilder ($\to$ gute Performance)
+\item Lernfähig / anpassbar
+\end{itemize}
+
+\subsection{Entscheidungsfunktion $g(x)$}
+
+\begin{eqnarray*}
+g(\myvector{x}) > 0 &\Rightarrow& \textrm{Klasse A} \\ g(\myvector{x}) < 0 &\Rightarrow& \textrm{nicht Klasse A} \\ g(\myvector{x}) = 0 &\Rightarrow& \textrm{keine Entscheidung}
+\end{eqnarray*}
+$$g(\myvector{x}) = \sum\limits_{i=1}^n w_1x_1 + w_0 = \myvector{w}^T \myvector{x} + w_0$$
+$\myvector{x} = (x_1,\dots,x_n)^T$ : Eigenschaftsvektor, $\myvector{w} = (w_1,\dots,w_n)^T$ : Gewichtungsvektor, $w_0$ : Schwellenwert
+
+\subsection{Lineare Diskriminantenfunktion}
+
+Hyperebe $H$: $g(\myvector{x}) = \sum\limits_{i=1}^n w_1x_1 + w_0 = \myvector{w}^T \myvector{x} + w_0 = 0$
+$$\Rightarrow \myvector{x} = q \frac{\myvector{w}}{|| \myvector{w} ||} + r \frac{\myvector{w}}{|| \myvector{w} ||} + \myvector{x}_p$$
+Vektor $q \frac{\myvector{w}}{|| \myvector{w} ||}$ entspricht: $g \left(q \frac{\myvector{w}}{|| \myvector{w} ||} \right) = 0 = q ||\myvector{w}|| + w_0$ $$\Rightarrow q = - \frac{w_0}{|| \myvector{w} ||}$$
+Und mit $g(\myvector{x}) = \myvector{w}^T q \frac{\myvector{w}}{|| \myvector{w} ||} + \myvector{w}^T r \frac{\myvector{w}}{|| \myvector{w} ||} + \myvector{w} \myvector{x}_p + w_0 = -w_0 + r ||\myvector{w}|| + w_0$ erhalten wir $$r = \frac{g(\myvector{x})}{|| \myvector{w} ||}$$
+
+\subsection{Fisher-lineare Diskriminante}
+
+\begin{itemize}
+\item Dimensionsreduktion
+\item Projeziert eine Menge von mehrdimensionalen Punkten auf eine Line $y = \myvector{w} \myvector{x}$
+\item Die Fisher Diskriminaten ist eine Funktion, die folgendes Kriterium maximiert $$g(x) = \frac{| \tilde{m}_1 - \tilde{m_2}|}{\tilde{s}_1 + \tilde{s}_2}$$
+wobei $\tilde{m}_i = \frac{1}{n} \sum\limits_{y \in Y_i} y$ : Mittel für projezierte Muster, $\tilde{s}_i^2 = \sum\limits_{y \in Y_i} (y - \tilde{m}_i)^2$ : Streuung für projezierte Muster
+\item Fisher's lineare Diskriminante:
+\begin{eqnarray*}
+\myvector{w} &=& s_w^{-1} (\myvector{m}_1 - \myvector{m}_2) \\ s_w &=& s_1 + s_2 \\ s_i &=& \sum\limits_{x \in X_i} (\myvector{x} - \myvector{m}_i)(\myvector{x} - \myvector{m}_i)^T
+\end{eqnarray*}
+\end{itemize}
+
+\subsection{Das Perzeptron}
+
+\mypic{10}{perzeptron}
+
+\subsubsection*{Lineare Diskriminantenfunktionen}
+
+\begin{itemize}
+\item Keine Annahme über die Verteilung (Nicht-parametrisch)
+\item Lineare Entscheidungsflächen
+\item Start durch überwachtes Training (Klassen der Trainingsdaten gegeben)
+\item Diskriminantenfunktion: $$g(x) = w_0 + \sum\limits_{i=1}^n w_ix_i = \sum\limits_{i=0}^n w_ix_i, \quad x_0 = 1$$
+\item $g(x)$ ergibt die Distanz von der Entscheidungsfläche
+\item Zwei Kategorien Fall:
+\begin{eqnarray*}
+g_1(x) > 0 &\Rightarrow& \textrm{Klasse 1} \\ g_1(x) < 0 &\Rightarrow& \textrm{Klasse 2}
+\end{eqnarray*}
+\end{itemize}
+
+\subsubsection*{Perzeptron}
+
+$$g(x) = \sum\limits_{i=0}^n w_i x_i \quad x_0 = 1 \qquad \to \qquad \textrm{finde } w$$
+Alle Vektoren $x_i$ sind korrekt benannt
+\begin{eqnarray*}
+\myvector{w}\myvector{x}_i > 0 && \textrm{ wenn } x_i \textrm{ zu } \omega_1 \textrm{ gehört} \\ \myvector{w}\myvector{x}_i < 0 && \textrm{ wenn } x_i \textrm{ zu } \omega_2 \textrm{ gehört}
+\end{eqnarray*}
+Oder setze alle Muster, die zu $\omega_2$ gehören auf ihr negatives ($-\myvector{x}_i$). Dann sind alle Vektoren korrekt klassifiziert, wenn $\myvector{w} \myvector{x}_i > 0$ für alle $i$.
+\subsubsection*{Kriteriumsfunktion vom Perzeptron}
+$$J_P(\myvector{w}) = \sum\limits_{x \in X} (- \myvector{w} \myvector{x})$$
+$X$ ist die Menge der falsch klassifizierten Merkmale. Da $\myvector{w} \myvector{x}$ die Negation für falsch klassifizierte Merkmale ist, ist $J_P(\myvector{w})$ positiv. Sobald $J_P = 0$ gilt, ist ein Lösungsvektor gefunden. \\ $J_P$ ist proportional zu der Summe der Distanzen der falsch klassifizierten Mustern zur Entscheidungsgrenze.
+$$\nabla J_P = \sum\limits_{x \in X} (- \myvector{x}) \qquad \myvector{w}_{k+1} = \myvector{w}_k + \zeta_k \sum\limits_{x \in X} \myvector{x}$$
+
+\subsubsection*{Lernen des Perzeptron}
+
+Fragen:
+\begin{itemize}
+\item Wie soll man die Lernrate setzen?
+\item Wie soll man die initialen Gewichte setzen?
+\end{itemize}
+Probleme:
+\begin{itemize}
+\item Untrennbare Daten
+\item Trennbare Daten, aber welche Entscheidungsfläche
+\item Nicht linear trennbar
+\end{itemize}
+
+\subsubsection*{Variationen}
+
+Entspannungsprozedur: $$J_q(\myvector{w}) = \sum\limits_{x \in X} (\myvector{w}^t \myvector{y})^2$$
+Der Gradient ist kontinuierlich $\to$ gleichmäßige Fläche. Manchmal geht es gegen Null!
+$$J_q(\myvector{w}) = \frac{1}{2} \sum\limits_{x \in X} \frac{(\myvector{x}^t\myvector{w} - b)^2}{||x||^2} \textrm{ begrenzt durch } b$$
+
+\subsection{Generalisierung}
+
+\begin{itemize}
+\item Leistung auf Trainingsdaten interessiert uns nicht, sondern ungesehene real Welt\dots
+\item Wie gut funktioniert mein System in unvorhergesehenen Situationen?
+\end{itemize}
+
+\subsubsection*{Generalisierungsfähigkeit}
+
+Fähigkeit, das aus den Trainingsdaten Erlernte auf neue Daten (Testdaten) anzuwenden.
+
+\subsubsection*{Drei Gründe für schlechte Generalisierung}
+\begin{enumerate}
+\item Overfitting / Overtraining (zu lange trainiert)
+\item Zu viele Parameter (weights) bzw. zu wenig Trainingsmaterial
+\item falsche Netzwerkstruktur
+\end{enumerate}
+\subsubsection*{Methoden zur Verbesserung der Generalisierung}
+
+\begin{enumerate}
+\item Training am Besten Punkt abbrechen
+\begin{itemize}
+\item Aufteilung der Daten in: Trainings-, Crossvalidation- und Test-Menge
+\item Wichtig: Testdaten von Trainingsdaten trennen! Wiederholtes Testen ist leichtes Trainieren (Tuning) $\to$ Crossvalidation Set
+\end{itemize}
+\item Reduzierung der Komplexität des Netzwerkes durch Regularisierung: Weight Decay, Weight Elimination, Optimal Brain Damage, Optimal Brain Surgeon
+\item Schrittweises Vergrößern eines zu kleinen Netzes (konstruktiv): Cascade Correlation, Meiosis Netzwerke, ASO (Automativ Structure Optimization)
+\end{enumerate}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

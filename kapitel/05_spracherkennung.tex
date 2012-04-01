@@ -1,0 +1,203 @@
+% !TeX root = summary.tex
+
+\section{Spracherkennung}
+
+\subsection{Spracherkennungssystem}
+
+\mypic{10}{speech1}
+
+%Erkennungsprozess:
+
+%\begin{center}
+%\includegraphics[width=10cm]{pics/erkennung.eps}
+%\end{center}
+
+\subsection{Erkennung}
+
+\begin{description}
+\item[gegeben:] akustische Daten $A = a_1,a_2,\dots,a_k$
+\item[Ziel:] Wortsequenz $W = w_1,w_2,\dots,w_n$ finden, so dass $\myprob{W}{A}$ miximiert wird.
+\end{description}
+
+Wiederholung: \textbf{Bayes Regel}\index{Bayes Regel} $$\myprob{W}{A} = \frac{\myprob{A}{W} \cdot P(W)}{P(A)}$$ wobei $\myprob{A}{W}$ : akustisches Modell (HMM), $P(W)$ : Sprachmodell, $P(A)$ : Konstante für einen kompletten Satz
+
+\subsection{Hidden Markov Modelle\index{Hidden Markov Modelle} (HMM)}
+
+Ein Hidden Markov Modell ist ein stochastisches Modell, das sich durch zwei Zufallsprozesse beschreiben lässt. \\
+Der erste Zufallsprozess entspricht dabei einer Markow-Kette, die durch Zustände und Übergangs- wahrscheinlichkeiten gekennzeichnet ist. Die Zustände der Kette sind von außen jedoch nicht direkt sichtbar (sie sind verborgen). Stattdessen erzeugt ein zweiter Zufallsprozess zu jedem Zeitpunkt beobachtbare Ausgangssymbole gemäß einer zustandsabhängigen Wahrscheinlichkeitsverteilung. Die Aufgabe besteht häufig darin, aus der Sequenz der Ausgabesymbole auf die Sequenz der verborgenen Zustände zu schließen.
+
+\subsubsection*{Elemente}
+
+\begin{center}
+\begin{tabular}{ll}
+Menge an Zuständen: & $S = \{S_0, S_1, \dots, S_N\}$ \\
+Übergangswahrscheinlichkeiten: & $P(q_t = S_i \, | \, q_{t-1} = S_j \} = a_{ij}$ \\
+Ausgabewahrscheinlichkeitsverteilungen: & $P(y_t = O_k \, | \, q_t = S_j) = b_j(k)$ \\
+(bei Zustand $j$ für Symbol $k$)
+\end{tabular}
+\end{center}
+
+\subsubsection*{HMM Probleme und Lösungen}
+
+\begin{description}
+\item[Evaluation:] \textsl{Problem:} Bei einem gegebenen Modell soll die Wahrscheinlichkeit einer speziellen Ausgabesequenz bestimmt werden. \\ \textsl{Lösung:} \textbf{Forward-Algorithmus}\index{Forward-Algorithmus} und \textbf{Viterbi-Algorithmus}
+\item[Dekodierung:] \textsl{Problem:} Es soll die wahrscheinlichste Sequenz der Zustände bestimmt werden, die eine vorgegebene Ausgabesequenz erzeugt hat. \\ \textsl{Lösung:} \textbf{Viterbi-Algorithmus}\index{Viterbi-Algorithmus}
+\item[Training:] \textsl{Problem:} Gegeben ist nur die Ausgabesequenz. Es sollen die Parameter des HMM bestimmt werden, die am wahrscheinlichsten die Ausgabesequenz erzeugen. \\ \textsl{Lösung:} \textbf{Forward-Backward-Algorithmus}\index{Forward-Backward-Algorithmus}
+\end{description}
+
+\subsection{Evaluation}
+
+Wahrscheinlichkeit einer Ausgabesequenz $O = O_1O_2 \dots O_T$ bei einem gegebenen Hidden Markov Modell $\lambda$ ist
+\begin{eqnarray*}
+\myprob{O}{\lambda} &=& \sum\limits_{\forall Q} \myprob{O \, , \, Q}{\lambda} \\ &=& \sum\limits_{\forall q_0, \dots, q_T} a_{q_0q_1} b_{q_2}(O_2) \cdots a_{q_{T-1}q_T}b_{q_T}(O_T)
+\end{eqnarray*}
+wobei $Q = q_0q_1\dots q_T$ eine Folge von Zuständen ist \\
+\textbf{Nicht praktisch, da die Zahl der Wege in} $O(N^T)$ \textbf{liegt.} ($N$: Anzahl der Zustände im Modell, $T$: Anzahl der Ausgabesequenzen)
+
+\subsubsection*{Der Forward Algorithmus}
+
+$$\alpha_{t}(j) = P(O_1O_2 \dots O_t, \, q_t = S_j \, | \, \lambda)$$
+rekursive Berechnung von $\alpha$:
+\begin{eqnarray*}
+\alpha_0(j) &=& \left\{ \begin{array}{cl} 1 & \textrm{ wenn } j \textrm{ Startzustand} \\ 0 & \textrm{ sonst} \end{array} \right. \\
+\alpha_t(j) &=& \left( \sum\limits_{i=0}^N \alpha_{t-1}(i) a_{ij} \right) b_j (O_t) \quad t > 0
+\end{eqnarray*}
+($\myprob{O}{\lambda} = \alpha_T(S_N)$, Berechnung liegt in $O(N^2T)$)
+
+\subsubsection*{Forward Trellis}
+
+\mypictwo{8}{hmm_automat}{10}{forward_trellis}
+
+\subsubsection*{Der Backward Algorithmus}
+
+$$\beta_{t}(i) = P(O_{t+1} O_{t+2} \dots O_{T} \, , \, q_t = S_i \, | \, \lambda )$$
+rekursive Berechnung von $\beta$:
+\begin{eqnarray*}
+\beta_0(i) &=& \left\{ \begin{array}{cl} 1 & \textrm{ wenn } i \textrm{ Endzustand} \\ 0 & \textrm{ sonst} \end{array} \right. \\
+\beta_t(i) &=& \sum\limits_{j=0}^N a_{ij} b_j(O_{t+1}) \beta_{t+1} (j) \quad t < T
+\end{eqnarray*}
+($\myprob{O}{\lambda} = \beta_0(S_0) = \alpha_T(S_N)$, Berechnung liegt in $O(N^2T)$)
+
+\subsubsection*{Backward Trellis}
+
+\mypictwo{8}{hmm_automat}{10}{backward_trellis}
+
+\subsection{Dekodierung}
+
+\subsubsection*{Der Viterbi Algorithmus}
+
+\begin{itemize}
+\item Finde die Zustandsfolge $Q$, die $\myprob{O \, , \, Q}{\lambda}$ maximiert.
+\item Verläuft ähnlich wie der Forward Algorithmus, jedoch wird das Maximum anstatt der Summe berechnet.
+\end{itemize}
+$$VP_t(i) = \max_{q_0, \dots, q_{t-1}} \myprob{O_1O_2 \dots O_{t} \, , \, q_t = i}{\lambda}$$
+rekursive Berechnung:
+\begin{eqnarray*}
+VP_t(j) &=& \max_{i=0, \dots, N} VP_{t-1}(i) a_{ij}b_j(O_t) \quad t > 0 \\
+P(O \, , \, Q \, | \, \lambda) &=& VP_T(S_N)
+\end{eqnarray*}
+Speicher jedes Maximum für die Ablaufverfolgung am Ende.
+
+\subsubsection*{Viterbi Trellis}
+
+\mypictwo{8}{hmm_automat}{10}{viterbi_trellis}
+
+\subsection{Training}
+
+\begin{itemize}
+\item Trainiere Parameter vom Hidden Markov Modell
+\begin{itemize}
+\item $\lambda$ einstellen, um $\myprob{O}{\lambda}$ zu maximieren
+\item kein effizienter Algorithmus für das globale Optimum
+\item ein effizienter iterativer Algorithmus findet das lokale Optimum
+\end{itemize}
+\item Viterbi-Training
+\begin{itemize}
+\item berechne den Viterbi-Weg mittels aktuellem Modell
+\item bewerte die Parameter neu, indem die Bezeichnung benutzt werden, die der Viterbi Algorithmus bestimmt hat
+\end{itemize}
+\item Baum-Welch\index{Baum-Welch} (Forward-Backward)
+\begin{itemize}
+\item berechne Wahrscheinlichkeiten mittels aktuellem Modell
+\item Filtere $\lambda \to \lambda$ basierend auf den berechneten Weten
+\item benutze $\alpha$ und $\beta$ vom Forward-Backward
+\end{itemize}
+\end{itemize}
+
+\subsubsection*{Der Forward-Backward Algorithmus}
+
+Wahrscheinlichkeit beim Übergang von $S_i$ nach $S_j$ zur Zeit $t$ bei gegebenem $O$:
+\begin{eqnarray*}
+\xi_t(i,j) &=& \myprob{q_t = S_i \, , \, q_{t+1} = S_j}{\lambda} \\ &=& \frac{\alpha_t(i) a_{ij} b_j(O_{t+1}) \beta_{t+1}(j)}{\myprob{O}{\lambda}}
+\end{eqnarray*}
+
+\subsubsection*{Baum-Welch Neubewertung}
+
+\begin{eqnarray*}
+\overline{a}_{ij} &=& \frac{\textrm{angenommene Anzahl an Übergängen von } S_i \textrm{ nach } S_j}{\textrm{angenommene Anzahl an Übergängen von } S_i} \\
+&=& \frac{\sum_{t=1}^T \xi_t(i,j)}{\sum_{t=1}^T \sum_{j=0}^N \xi_t(i,j)} \\
+\overline{b}_j(k) &=& \frac{\textrm{angenommene Dauer im Zustand } j \textrm{ mit Symbol } k}{\textrm{angenommene Dauer im Zustand } j} \\
+&=& \frac{\sum_{t: O_t = k} \sum_{i=0}^N \xi_t(i,j)}{\sum_{t=1}^T \sum_{i=0}^N \xi_t(i,j)}
+\end{eqnarray*}
+
+\subsubsection*{Konvergenz des Forward-Backward Algorithmus}
+
+\begin{enumerate}
+\item initialisiere $\lambda = (A,B)$
+\item berechne $\alpha$, $\beta$ und $\xi$
+\item bewerte $\overline{\lambda} = (\overline{A},\overline{B})$ aus $\xi$
+\item ersetze $\lambda$ durch $\overline{\lambda}$
+\item wenn nicht konvergiert, gehe zu 2
+\end{enumerate}
+Es kann gezeigt werden, dass $\myprob{O}{\overline{\lambda}} > \myprob{O}{\lambda}$ gilt, wenn nicht $\lambda = \overline{\lambda}$ gilt.
+
+\subsection{Sprachmodelle}
+
+\subsubsection*{Bassierend auf die Grammatik}
+
+\begin{itemize}
+\item Bestimme Grammatik für mögliche Satzmuster
+\item Vorteile: Lange Historie / Kontext; es wird keine große Textdatenbank benötigt
+\item Problem: Grammatik zu schreiben ist sehr aufwendig; unflexibel: nur erstellte Muster können erkannt werden
+\end{itemize}
+
+\subsubsection*{N-Gram\index{N-Gram}}
+
+\begin{itemize}
+\item nächstes Wort wird anhand der Historie bestimmt
+\item die Historie ist approximiert durch die letzten 2 oder 3 (allgemein $n$) Wörter
+\item alles vor Wort $w_{i-n+1}$ wird in eine Äquivalenzklasse plaziert
+\item schliesslich ist die Wahrscheinlichkeit für das nächste Wort gegeben durch
+\begin{itemize}
+\item Trigram: $\myprob{w_i}{w_{i-1} \, , \, w_{i-2}}$
+\item Bigram: $\myprob{w_i}{w_{i-1}}$
+\item Unigram: $P(w_i)$
+\end{itemize}
+\item Vorteile:
+\begin{itemize}
+\item trainierbar auf großen Textdatenbanken
+\item "{}milde"{} Vorhersage
+\item kann direkt kombiniert werden mit einem Akustikmodell
+\end{itemize}
+\item Problem: benötigt eine große Textdatenbank für jedes Gebiet
+\end{itemize}
+
+\subsubsection*{Objektive Bewertung der Qualität von Sprachmodellen}
+
+Genau ein Sprachmodell ist besser als eine Alternative, wenn die Wahrscheinlichkeit $\hat{P}(w_1,w_2,\dots ,w_n)$ mit dem es den Großteil eines Tests $W$ erzeugen würde, größer ist. Aber:
+$$\hat{P}(w_1,w_2,\dots ,w_n) = \prod\limits_{i=1}^n Q(w_i \, | \, \Psi(w_1,\dots,w_{i-1}))$$
+ein gutes Qualitätsmaß ist das LOGPROB:
+$$\hat{H}(W) = \frac{1}{n} \sum\limits_{i=1}^n \log_2 Q(w_i \, | \, \Psi(w_1,\dots,w_{i-1}))$$
+Wenn Wörter einheitlich durch Zufall aus einem Vokabular der Größe $V$ von "{}Sprachmechanismen"{} erzeugt wurden, dann gilt
+$$Q(w_i \, | \, \Psi(w_1,\dots,w_{i-1})) = \frac{1}{V}$$ und $$2^{\hat{H}(W)} = 2^{\log V} = V$$
+Also definieren wir die Perplexität\index{Perplexität} eines Sprachmodells folgendermaßen: $$PP(W) = 2^{\hat{H}(W)}$$
+und interpretieren sie als "{}Abzweigungsfaktor"{} der Sprache, wenn $\Psi$ gegeben ist.
+
+\subsubsection*{Erfasste Erkennungsperformance}
+
+Wortfehlerrate\index{Wortfehlerrate}
+
+$$WER = \frac{\# Ins + \# Del + \# Sub}{N}$$
+
+
+

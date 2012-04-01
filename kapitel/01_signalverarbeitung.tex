@@ -1,0 +1,191 @@
+% !TeX root = summary.tex
+
+\section{Einführung in die digitale Signalverarbeitung}
+
+\subsection{Grundlegendes}
+
+\begin{description}
+\item[Erfassen/Messen von Signalen:] \quad
+\begin{itemize}
+\item Signal als Funktion: Akustik $f(t)$; Bilder $f(x,y)$; Energie als Funktion der Zeit oder des Raumes; Energie: Lautstärke, Helligkeit, Grauwertintensität; Farbe, Stereo, Bildsequenzen
+\item Eigenschaften: Hinlänglich glatt; $0 \leq f(x,y) < \infty$ (wertbeschränkt)
+\end{itemize}
+\item[Abtastung und Sampling\index{Sampling}:] \quad
+\begin{itemize}
+\item Man messe das Signal $f(x)$ an verschiedenen Punkten $x$
+\item Punkte $x$, in diskreten Abständen, an meist äquidistanten Stellen eines Abtastrasters
+\item Akustik: $G = f(0), f(\Delta), f(2 \Delta), \dots, f((N-1)\Delta)$
+\item Bild: $$G = \left[ \begin{array}{ccc} f(0,0) & \cdots & f(0,N-1) \\ \vdots & \ddots & \vdots \\ f(N-1,0) & \cdots & f(N-1,N-1) \end{array} \right]$$
+\item Meist: $N = 2^m$
+\item Bild: Rechtwinklig, schiefwinklig, sechseckige Raster
+\item Wie oft? Wie großes Raster? $\to$ Sampling Theorem
+\end{itemize}
+\item[Quantisierung\index{Quantisierung}:] \quad
+\begin{itemize}
+\item Im Computer müssen Messwerte quantisiert werden. Die Anzahl der Quantisierungsstufen bestimmt Auflösung.
+\item Feinere Auflösung: Bessere Qualität, mehr Speicher
+\item Dynamische Abtastung: Starke Übergänge: Fein rastern - grob quantisieren; schwache Übergänge: Grob rastern, fein quantisieren
+\end{itemize}
+\item[Digitalisierung von Signalen:] \quad
+\begin{itemize}
+\item CD, Video (DV, DVD), Digitaler Rundfunk (DAB), ISDN
+\item Vorteile: Qualität (Bits sind Bits, verlustfreie Übertragung); Kompression; mehrfacher Nutzen von Kommunikationskanälen (Time Division Multiple Access)
+\end{itemize}
+\item[Diracfunktion\index{Diracfunktion}:]\quad
+\begin{itemize}
+\item Definition: $$\int\limits_{- \infty}^{+ \infty} f(x) \delta(x - x_0) dx = f(x_0) \quad \textrm{und} \quad \int\limits_{- \infty}^{+ \infty} \delta(x - x_0) dx = \int\limits_{x_0^-}^{x_0^+} \delta(x - x_0) dx = 1$$
+\item Hat Fläche 1, an einer beliebig kleinen Umgebung
+\item $A \delta(x - x_0)$ Impuls mit Stärke $A$ an der Stelle $x = x_0$
+\end{itemize}
+\end{description}
+
+\subsection{Faltung\index{Faltung}}
+
+In der Mathematik und besonders in der Funktionalanalysis beschreibt die Faltung einen mathematischen Operator, welcher für zwei Funktionen $f$ und $g$ eine dritte Funktion liefert. Diese gibt eine Art "{}Überlappung"{} zwischen $f$ und einer gespiegelten und verschobenen Version von $g$ an.
+Definition: $$\begin{array}{cl} (f * g)(t) = \int\limits_{- \infty}^{+ \infty} f(t - \tau) g(\tau) d \tau & \quad \textrm{(kontinuierlich)} \\ (f * g)[i] = \sum\limits_{j = - \infty}^{\infty} f[i - j] g[j] & \quad \textrm{(diskret)} \end{array}$$
+Bedeutung: \\
+Eine anschauliche Deutung der Faltung ist die Gewichtung einer Funktion mit einer anderen. Der Funktionswert der Gewichtsfunktion an einer Stelle $t$ gibt an, wie stark der um $t$ zurückliegende Wert der gewichteten Funktion in den Wert der Ergebnisfunktion eingeht. \\
+Faltung der Zeitfunktion: $$F(f_1(t) * f_2(t)) = F_1(\omega) \cdot F_2(\omega)$$
+Multiplikation der Zeitfunktionen: $$F(f_1(t) \cdot f_2(t)) = F_1(\omega) * F_2(\omega)$$
+Faltung zweier Funktionen entspricht dem Filtern eines Signals. \\[0,1cm]
+Beipiel mit den folgenden zwei Funktionen:
+$$f(x) = \left\{ \begin{array}{ccc} A & \textrm{ für } & x \in [-L;L] \\ 0 & \textrm{sonst} & \end{array} \right. \quad \textrm{und} \quad g(x) = \left\{ \begin{array}{ccc} A & \textrm{ für } & x \in [0;2L] \\ 0 & \textrm{sonst} & \end{array} \right.$$
+
+% Bild der beiden Funktionen
+\mypic{10}{faltung1}
+
+Die Faltung der beiden Funktionen sieht folgendermaßen aus:
+
+% Bild der Faltung
+\mypic{5}{faltung2}
+
+\subsection{Fouriertransformation\index{Fouriertransformation}}
+
+\subsubsection*{Idee der Fouriertransformation}
+\begin{itemize}
+\item Zerlegung eines Signals in eine Summe von komplexen Sinus- und Cosinusfunktionen.
+\item Unterschiedliche Frequenzen.
+\item Darstellung: Amplituden und Phasen von Frequenz
+\end{itemize}
+
+\subsubsection*{Fouriertransformation}
+\begin{itemize}
+\item Fouriertransfromation: $$F(\omega) = \int\limits_{- \infty}^{\infty} f(t) e^{-i \omega t} dt$$
+\item Inverse Fouriertransformation: $$f(t) = \frac{1}{2 \pi} \int\limits_{- \infty}^{\infty} F(\omega) e^{+i \omega t} d \omega$$
+\item Betrag des Fourierspektrums: $$|F(\omega)| = \sqrt{\Re(F(\omega))^2 + \Im(F(\omega))^2}$$
+\item Phase des Spektrums: $$\phi(F(\omega)) = \textrm{arctan}\frac{\Im(F(\omega))}{\Re(F(\omega))}$$
+\end{itemize}
+
+\subsubsection*{Eigenschaften}
+\begin{itemize}
+\item Linearität: $$F(c_1f_1 + c_2f_2) = c_1F(f_1) + c_2F(f_2)$$
+\item Differentiation: $$F(f^{(n)}) = (i \omega)^n F(f)$$
+\item Verschiebung: $$\begin{array}{cl} F(f(t-T)) = e^{-i \omega T} F(f) & \quad \textrm{(Zeit)} \\ F(e^{-i \omega_0 t} f(t)) = F(\omega - \omega_0) & \quad \textrm{(Frequenz)} \end{array}$$
+\end{itemize}
+
+\subsubsection*{Zusammenhänge}
+\begin{center}
+\begin{tabular}{rcl}
+Signal & $\Rightarrow$ & Transformierte \\ Transformierte & $\Leftarrow$ & Signal \\[0,1cm] diskret & $\Leftrightarrow$ & periodisch \\ reell & $\Leftrightarrow$ & gerade \\ imaginär & $\Leftrightarrow$ & ungerade
+\end{tabular}
+\end{center}
+
+\subsubsection*{Typische Fouriertransformationen}
+\begin{itemize}
+\item Sinusfunktion: $$f(x) = a \sin(2 \pi \alpha x) \quad \Leftrightarrow \quad F(\omega) = \frac{a}{2}i \delta(\omega + \alpha) - \frac{a}{2}i \delta(\omega - \alpha)$$
+\item Cosinusfunktion: $$f(x) = a \cos(2 \pi \alpha x) \quad \Leftrightarrow \quad F(\omega) = \frac{a}{2} \delta(\omega + \alpha) + \frac{a}{2} \delta(\omega - \alpha)$$
+\end{itemize}
+(Sinus- und cosinusförmige Signale werden im Frequenzbereich als zwei Impulse wiedergegeben.)
+\begin{itemize}
+\item Impulszug: $$f(x) = \sum\limits_{\nu = -\infty}^{\infty} \delta(x - \nu T) \quad \Leftrightarrow \quad F(\omega) = \frac{1}{T} \sum\limits_{\nu = -\infty}^{\infty} \delta(\omega - \frac{\nu}{T})$$
+\end{itemize}
+
+\subsubsection*{Anmerkungen}
+\begin{itemize}
+\item Periodisch unendlich ausgedehntes Signal wird im Fourierbereich als endliche Bandbreite dargestellt.
+\item Endliches Signal kann zu unendlichem Spektrum führen. Approximation nötig!
+\item Je stärker die Übergänge im Signal, desto höher die Frequenz der Komponenten, um so breiter das Spektrum.
+\end{itemize}
+
+\subsection{Fourierreihen\index{Fourierreihen}}
+
+\subsubsection*{Fourierreihen und -transformationen}
+Problem: Beide kontinuierlich, schwer digital darzustellen
+\begin{itemize}
+\item Diskrete Zeit (\textsl{discrete time}) Fouriertransformation: \\ Eingabe: diskret, aperiodisch \\ Ergebnis: periodisch, kontinuierlich
+\item Diskrete Fouriertransformation (DFT, FFT): \\ Eingabe: periodisch, diskret \\ Ergebnis: diskret, periodisch \\ Spezialfall der Z-Transformation. Periodische Eingabe? Man schneidet ein Fenster aus und tut so, als ob es so periodisch unendlich fortgesetzt wird.
+\end{itemize}
+
+\subsubsection*{Fourierreihenzerlegung\index{Fourierreihenzerlegung}}
+\begin{itemize}
+\item Periodisches Signal
+\item Signal: $$c_k = \frac{1}{2L} \int\limits_{-L}^{+L} f(x) e^{-i \pi \frac{k}{L} x} dx \quad \textrm{wobei} \quad f(x) = \sum\limits_{k=- \infty}^{+ \infty} c_k e^{i \pi \frac{k}{L} x}$$
+\item Komplexe Schreibweise: $$e^{ix} = \cos(x) + i \sin(x)$$
+\item Parameter: Amplitude, Phase, Frequenz (Periode)
+\end{itemize}
+
+\subsubsection*{Fourierreihe für Rechteckfunktion}
+$$f(x) = \frac{1}{2} a_0 + \sum\limits_{n=1}^{\infty} \left( a_n \cos( \frac{2 \pi}{T} nx) + b_n \sin (\frac{2 \pi}{T} nx) \right)$$
+Beispiel für Fourierreihenentwicklung: \\
+Für $f(x) = \textrm{sign}(\sin(x))$ gilt:
+\begin{eqnarray*}
+a_n &=& \frac{1}{\pi} \int\limits_{- \pi}^{+ \pi} f(x) \cdot \cos(nx) dx = 0 \\
+b_n &=& \frac{1}{\pi} \int\limits_{- \pi}^{+ \pi} f(x) \cdot \sin(nx) dx = \frac{2}{n \pi} (1 - (-1)^n)
+\end{eqnarray*}
+und somit $$f(x) = \frac{4}{\pi} \left( \sin(x) + \frac{\sin(3x)}{3} + \frac{\sin(5x)}{5} + \cdots \right)$$
+
+\subsection{Aliasing\index{Aliasing}}
+In der Signalverarbeitung treten Alias-Effekte beim Digitalisieren analoger Signale auf. \\
+Damit das Ursprungssignal korrekt wiederhergestellt werden kann, dürfen im abgetasteten Signal nur Frequenzanteile vorkommen, die weniger als halb so groß wie die Abtastfrequenz sind. Wird dieses Abtasttheorem verletzt, werden Frequenzanteile, die größer sind als die halbe Abtastfrequenz als niedrigere Frequenzen interpretiert. Die hohen Frequenzen geben sich sozusagen als jemand anderes aus, daher die Bezeichnung Alias. Die halbe Abtastfrequenz wird als Nyquist-Frequenz bezeichnet. \\
+Falls es nicht zu vermeiden ist, dass hohe Frequenzen im Eingangssignal vorhanden sind, wird das Eingangssignal zur Unterdrückung von Alias-Effekten durch einen Tiefpass gefiltert (Anti-Aliasing-Filter), wobei die aktive Filterwirkung dieses Abschneidens der hohen Frequenzen eindeutiger mit Höhensperre, Höhenfilter, High Cut und Treble Cut beschrieben wird.
+
+\subsubsection*{Abtast/Sampling Theorem}
+$$\Delta x \leq \frac{1}{2 \omega}$$
+\begin{itemize}
+\item Die Samplingfrequenz muss mindestens zweimal so gross sein als die höchste im Signal vorkommende Frequenz $\omega$ (\textsl{Cutoff-frequency}).
+\item Um Aliasing zu vermeiden muss das Abtasttheorem eingehalten werden.
+\item Ist das Abtasttheorem eingehalten, kann ein Signal durch inverse Fouriertransformation vollständig rekonstruiert werden.
+\end{itemize}
+
+\subsubsection*{Abtasten in der Praxis}
+\begin{itemize}
+\item Abtasten nur in endlichem Intervall möglich.
+\item Sprektrum lokal (in kleinem Intervall interessant)
+\begin{itemize}
+\item Multiplikation des Signals mit Fensterfunktion
+\item Faltung des Fenstersprektrums mit Signalspektrum
+\item Ungenauigkeiten, genaue Rekonstruktion nicht mehr möglich
+\end{itemize}
+\item Ausnahme: Signal ist periodisch und bandbegrenzt
+\end{itemize}
+
+\subsubsection*{Behebung von Aliasing}
+Möglichkeiten zur Behebung von Aliasing:
+\begin{itemize}
+\item Samplefrequenz erhöhen. Nachteil: erhöhtes Datenaufkommen
+\item Bandbegrenzen des Originalsignals durch Tiefpassfilter (Anti-Aliasing Filter). Nachteil: Informationsverlust
+\end{itemize}
+
+\subsection{Korrelation\index{Korrelation}}
+\begin{itemize}
+\item Eindimensionale Kreuzkorrelation: $$R_{f,g}(m) = \sum\limits_{i} f(i) g(i - m)$$
+\item Zweidimensionale Kreuzkorrelation: $$R_{f,g}(m) = \sum\limits_i \sum\limits_j f(i,j) g(i-m,j-n)$$
+\item Autokorrelation = Kreuzkorrelation mit sich selbst:
+\begin{eqnarray*}
+A(m) &=& \sum\limits_i f(i) f(i-m) \\ A(m,n) &=& \sum\limits_i \sum\limits_j f(i,j) f(i-m,j-n)
+\end{eqnarray*}
+\end{itemize}
+
+\subsection{Schablonenanpassung\index{Schablonenanpassung} (\textsl{Template Matching})}
+\begin{itemize}
+\item Eine einfache Form der Klassifikation.
+\item Ziel: Ein Muster zu erkennen das einem abgespeicherten Beispiel ähnlich ist.
+\item Maß der Übereinstimmung ist der Absolutbetrag zwischen Muster und Schablone (zentriert an $(m,n)$): $$M_{f,g}(m,n) = \sum\limits_i \sum\limits_j | f(i,j) g(i-m,j-n)|$$
+\item Abstand $E(m,n)$ ist definiert als Quadrat der Kreuzkorrelation: $$E_{f,g} (m,n) = \left( \sum\limits_i \sum\limits_j f(i,j) g(i-m,j-n) \right)^2$$
+\end{itemize}
+
+
+
+
+
+\textit{}

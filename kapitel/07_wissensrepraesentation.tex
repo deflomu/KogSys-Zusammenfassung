@@ -1,0 +1,819 @@
+% !TeX root = summary.tex
+
+\section{Wissensrepäsentation}
+
+\subsection{Einführung}
+
+\subsubsection*{Was ist Wissen?}
+Gespeicherte
+\begin{itemize}
+\item Beschreibungen, Modelle, Aktionsfolgen
+\item Vorschriften zur Reaktion auf Ereignisse
+\item Motorische, kognitive Fähigkeiten
+\end{itemize}
+konkreter:
+\begin{itemize}
+\item Computerprogramme
+\item Regeln der Aussagenlogik
+\item Gewichte von Neuronalen Netzen, \dots
+\end{itemize}
+
+\subsection{Grundlagen}
+
+% Bild Folie 8
+\mypic{6}{wb1}
+
+Eine Wissensdatenbank\index{Wissensdatenbank} besteht aus Sätzen, die in einer Wissensrepräsentationssprache abgefasst sind. Jeder Satz stellt eine Annahme über die Welt dar:
+\begin{center}
+\begin{tabular}{ll}
+$\alpha$: & "{}\textbf{Ident1} IST-EIN Fahrrad."{} \\ $\beta$: & "{}\textbf{Ident2} IST-EIN Mensch."{} \\ $\gamma$: & "{}\textbf{Ident3} BESITZT Ident1."{} oder \\ $\alpha$: & "{}$r \in R^{20}$."{}
+\end{tabular}
+\end{center}
+
+% Bild Folie 9
+\mypic{8}{wb2}
+
+\begin{description}
+\item[Erkläre:] Füge der Datenbank Wissen hinzu.
+\item[Befrage:] Frage Wissen aus Datenbank ab.
+\end{description}
+\begin{center}
+\begin{tabular}{|c|}
+\hline
+Erkläre(DB, "{}Ident1 BESITZT Ident2."{}) \\ $\to$ OK \\ Befrage(DB, "{}Was BESITZT Ident2?"{}) \\ $\to$ Ident1 \\ \hline
+\end{tabular}
+\end{center}
+
+% Bild Folie 10
+\mypic{8}{wb3}
+
+\begin{description}
+\item[Deduktion\index{Deduktion}:] Leite neue Sätze von bekannten ab. Injektive Abbildung Deduktion: $$DB \to DB$$ Minimale Deduktion: Identität.
+\end{description}
+
+\subsection{Logik allgemein}
+
+\begin{center}
+Logik \quad : \quad (Symbolmenge, Modellmenge, Syntax, Semantik, Folgerungsop. $\models$)
+\end{center}
+
+\subsubsection*{Symbol-, Modellmenge}
+
+\begin{itemize}
+\item Elementarwerte für Aussagen: wahr, falsch
+\item Symbolmenge $S$ enthält alle Symbole, über die Aussagen gemacht werden können.
+\item Modell: Menge $\{(s_i,w_i)\}$ von Symbolen \\ $s_i \in S$ mit zugeordneten Werten, $w_i \in Def(s_i)$
+\item Modellmenge: Menge aller möglichen Modelle: $$\forall i \forall w \in Def(s_i) \exists M \, : \, (s_i,w_i) \in M = (s_i,w)$$
+\end{itemize}
+\textbf{\textsl{Beispiel: Aussagenlogik}}
+\begin{eqnarray*}
+S &=& \{a,b\} \\ M &=& \{ \{ (a,wahr),(b,wahr) \} , \\ && \,\,\, \{ (a,wahr),(b,falsch)\} , \\ && \,\,\, \{ (a,falsch),(b,wahr) \} , \\ && \,\,\, \{ (a,falsch) , (b,falsch) \} \}
+\end{eqnarray*}
+Schreibweise: lateinische Buchstaben für Symbole, griechische Buchstaben für Sätze
+
+\subsubsection*{Syntax}
+
+\begin{description}
+\item[Syntax\index{Syntax}:] Legt fest, welche Sätze wohlgeformt sind.
+\end{description}
+Nur wohlgeformte Sätze sind gültig!
+\begin{center}
+\begin{tabular}{|r @{$\, \Rightarrow \,$}l @{\quad} l|}
+\hline
+$(a \vee b)$ & $c$ & wohlgeformt \\
+$()a \vee$ & $bc$ & nicht wohlgeformt \\ \hline
+\end{tabular}
+\end{center}
+
+\subsubsection*{Semantik}
+
+\begin{description}
+\item[Semantik\index{Semantik}:] Bestimmt den Wahrheitswert eines Satzes in Bezug auf ein Modell.
+\end{description}
+\begin{eqnarray*}
+\textrm{Satz } \alpha &=& (a \wedge b) \Rightarrow c \\ \textrm{Modell } M &=& \{ (a,wahr) , (b,wahr) , (c,wahr) \} \\ &\Rightarrow& \alpha / M \,\, wahr \, , \, M \textrm{ erfüllt } \alpha \\
+\textrm{Modell } M &=& \{ (a,wahr) , (b,wahr) , (c,falsch) \} \\ &\Rightarrow& \alpha / M \,\, falsch
+\end{eqnarray*}
+
+\subsubsection*{Folgerung $\models$}
+
+$$\alpha \models \beta \, : \, \textrm{"{}} \beta \textrm{ folgt aus } \alpha \textrm{"{}}$$
+$\alpha \models \beta$ genau dann, wenn für alle Modelle, in denen $\alpha$ wahr ist, $\beta$ ebenfalls wahr ist.
+$$\alpha \, : \, x+y=4 \qquad \beta_1 \, : \, y = 4-x \qquad \beta_2 \, : \, \frac{x}{y} = 1 \quad \Rightarrow \quad \alpha \models \beta_1 \qquad \alpha \not\models \beta_2$$
+
+Zurück zur Wissensdatenbank $WB$: \\
+Kann als $\wedge$-verknüpfte Sequenz von Sätzen aufgefasst werden:
+$$WB \, : \, \left\{ \begin{array}{r @{\, : \,} r @{\, = \,} l} \alpha_1 & x+y & 4 \\ \alpha_2 & x/y & 1 \end{array} \right\}$$
+$\Rightarrow$ $WB = \alpha_1 \wedge \alpha_2$ $wahr$ $\forall M \, : \, x=2, \, y=2$ \\
+$\Rightarrow$ $M$ erfüllt $WB$ $\forall M \, : \, x=2, \, y=2$ \\
+$$WB \models \beta \quad \textrm{ gdw } \quad \left( \bigwedge\limits_{\alpha_i \in WB} \alpha_i \right) \Rightarrow \beta = wahr$$
+
+\subsubsection*{Modellprüfung}
+
+Algorithmus zur Überprüfung einer $WB \models \alpha$-Relation:
+\begin{enumerate}
+\item Finde Menge aller Modelle $M = \{M_i\}$ über $S$
+\item Eliminiere alle $M_i$ mit $WB/M = falsch$
+\item $WB \models \alpha$ genau dann, wenn $$\forall M_i \in M \, : \, \alpha / M_i = wahr$$
+\end{enumerate}
+
+\subsubsection*{Deduktion}
+
+Wenn ein Algorithmus $i$ existiert, der den Satz $\alpha$ aus der Wissensbasis $WB$ ableiten kann, schreiben wir $$WB \vdash_i \alpha$$
+("{}$\alpha$ wird durch $i$ aus $WB$ abgeleitet"{} oder "{}$i$ leitet $\alpha$ aus $WB$ ab"{}) \\[0,1cm]
+Eigenschaften von Deduktionsalgorithmen:
+\begin{itemize}
+\item Algorithmus $i$ "{}korrekt"{} genau dann, wenn er \underline{nur} Sätze aus $WB$ ableitet, die aus $WB$ folgen: $$\forall \alpha \, : \, WB \vdash_i \alpha \quad \Rightarrow \quad WB \models \alpha$$
+\item Algorithmus $i$ "{}vollständig"{} genau dann, wenn er \underline{alle} Sätze aus $WB$ ableitet, die aus $WB$ folgen: $$\forall \alpha \, : \, WB \models \alpha \quad \Rightarrow \quad WB \vdash_i \alpha$$
+\end{itemize}
+
+\subsubsection*{Zusammenfassung}
+
+Eine Logik:
+\begin{itemize}
+\item bestimmt den Wahrheitsgehalt von Sätzen in Bezug auf Modelle
+\item besteht aus Symbolmenge, Modellmenge, Syntax, Semantik, Folgerung
+\end{itemize}
+Eine Wissensbasis:
+\begin{itemize}
+\item besteht aus einer Menge von Sätzen
+\item passt zu einem Modell $M$ (oder auch nicht)
+\end{itemize}
+Ein Deduktions-Algorithmus
+\begin{itemize}
+\item leitet Sätze aus einer Wissensbasis ab
+\item kann korrekt und / oder vollständig sein
+\end{itemize}
+
+\subsection{Aussagenlogik}
+
+\begin{itemize}
+\item Aussagenlogik als Beispiel einer sehr einfachen Logik
+\item sehr alt (antikes Griechenland)
+\item bildet die Basis, von der die allgemeine Logik abgeleitet wurde
+\item eignet sich sehr "{}natürlich"{} zur Illustration bestimmter Konzepte
+\end{itemize}
+
+\subsubsection*{Syntax}
+
+\begin{eqnarray*}
+Satz &\to& Atom \, | \, Komplex \\ Atom &\to& True \, | \, False \, | \, Symbol \\ Symbol &\to& P \, | \, Q \, | \, R \, \dots \\
+Komplex &\to& \neg Satz \, | \, (Satz \wedge Satz) \, | \, (Satz \vee Satz) \, | \, (Satz \Rightarrow Satz) \, | \, (Satz \Leftrightarrow Satz)
+\end{eqnarray*}
+
+\subsubsection*{Semantik}
+Wahrheitsgehalt im Modell $M$:
+\begin{enumerate}
+\item $True = wahr$, $False = falsch$ $\forall M$
+\item Wahrheitsgehalt von Symbolen wird in $M$ spezifiziert
+\item Wahrheitsgehalt aller anderen Sätze rekursiv:
+\begin{enumerate}
+\item $\forall$ Sätze $\alpha$ $\forall$ Modelle $M$ : $\neg \alpha$ $falsch$ gdw $\alpha \in M$ $wahr$
+\item $\forall \alpha,\beta \, \forall M \, : \, \alpha \wedge \beta \,\, wahr$ gdw $\alpha \in M \,\, wahr$ und $\beta \in M \,\, wahr$
+\item etc.
+\end{enumerate}
+(Alternative: Wahrheitstabelle)
+\end{enumerate}
+
+\subsubsection*{Muster}
+
+Allgemeingültige Deduktionsregeln aus der klassischen Literatur:
+\begin{itemize}
+\item \textbf{Modus Ponens\index{Modus Ponens}:} \\ Wenn $\alpha \Rightarrow \beta$ und $\alpha$ gegeben sind, kann $\beta$ inferiert werden. $$\frac{\alpha \Rightarrow \beta \, , \, \alpha}{\beta}$$
+\item \textbf{Und-Elimination\index{Und-Elimination}:} $$\frac{\alpha \wedge \beta}{\alpha} \qquad \frac{\alpha \wedge \beta}{\beta}$$ Aus einer Konjunktion kann jedes der Elemente inferiert werden. \\ Korrektheitsbeweis aus Wahrheitstabelle!
+\end{itemize}
+
+\subsection{Resolution\index{Resolution}}
+
+Basis für Deduktionsalgorithmen \\
+\textbf{Einheits-Resolutionsregel} (aus Modus Ponens): \\ Seien $p_1,\dots,p_k$ und $q$ Literale mit $q = \neg p_i$. Dann gilt: $$\frac{p_1 \vee \dots \vee p_k \, , \, q}{p_1 \vee \dots \vee p_{i-1} \vee p_{i+1} \vee \dots \vee p_k}$$
+\textbf{Allgemeine Form} der Resolutionsregel: \\ $p_1,\dots,p_k$ und $q_1,\dots,q_n$ Literale mit $p_i = \neg q_j$. Dann gilt: $$\frac{p_1 \vee \dots \vee p_k \, , \, q_1 \vee \dots \vee q_n}{p_1 \vee \dots \vee p_{i-1} \vee p_{i+1} \vee \dots \vee p_k \vee q_1 \vee \dots \vee q_{j-1} \vee q_{j+1} \vee \dots \vee q_n}$$
+Jeder vollständige Suchalgorithmus, kombiniert mit der Resolutionsregel,
+\begin{itemize}
+\item kann jede Schlussfolgerung ableiten, die aus jeder Wissensbasis der Aussagenlogik folgt.
+\item bildet die Basis für Familien von vollständigen Deduktionsalgorithmen.
+\item beweist $WB \models \alpha$ durch Widerlegung von $(WB \wedge \neg \alpha)$.
+\end{itemize}
+Voraussetzung: Sätze müssen in konjunktiver Form vorliegen.
+\begin{description}
+\item[Klausel\index{Klausel}:] Eine Disjunktion von Literalen $$(l_1 \vee \dots \vee l_n)$$
+\item[Konjunktive Form (KF):] Jede aussagenlogische Formel kann als Konjunktion von Klauseln ausgedrückt werden. Dann liegt sie in konjunktiver Form vor: $$(l_{1,1} \vee \dots \vee l_{1,k_1}) \wedge \dots \wedge (l_{n,1} \vee \dots \vee l_{n,k_n})$$
+\end{description}
+
+\subsubsection*{Resolutionsalgorithmus}
+
+Zeige $WB \models \alpha$ durch Widerlegung von $(WB \wedge \neg \alpha)$
+\begin{center}
+\begin{tabular}{l}
+$klauseln$ $:=$ Menge Klauseln in KF $(WB \wedge \neg \alpha)$ \\
+$neu$ $:=$ $\{\}$ \\
+\verb|loop:| \\
+\verb|  for all | $C_m$, $C_n$ \verb| in | $klauseln$: \\
+\verb|    |$res :=$ \verb| resolution(|$C_m$, $C_n$\verb|)| \\
+\verb|    if | $\emptyset$ \verb| = | $res$: \verb| return | $true$ \\
+\verb|    |$neu := neu \cup res$ \\
+\verb|  if | $neu \subseteq klauseln$: \verb| return | $false$ \\
+\verb|  |$klauseln := klauseln \cup neu$
+\end{tabular}
+\end{center}
+
+Beispiel:
+% Bild Folie 34 (Block)
+\mypic{10}{bsp_resolution}
+
+Der Resolutionsalgorithmus ist vollständig aber auch sehr afwendig -- $O(n^2)$. Realistische Vereinfachungen:
+\begin{itemize}
+\item Horn-Klauseln (Prolog), Vorwärts-/Rückwärts-Verkettung
+\item Davis-Putnam-Logemann-Loveland (DPLL)
+\end{itemize}
+
+\subsection{Effiziente Logik-Algorithmen}
+
+\begin{description}
+\item[Horn-Klausel\index{Horn-Klausel}:] Disjunktion von Literalen, von denen höchstens eins positiv ist: $$(\neg a \vee \neg b \vee c)$$ lasst sich schreiben als: $$\underbrace{(a \wedge b)}_{Koerper} \Rightarrow \underbrace{c}_{Kopf}$$
+\end{description}
+Spezialtypen von Horn-Klauseln:
+\begin{itemize}
+\item keine negativen Literale: Fakt, Axiom
+\item genau ein positives Literal: Definition
+\item kein positives Literal: Integritätseinschränkung
+\end{itemize}
+Eigenschaften von Horn-Klausel-basierten Wissensbasen:
+\begin{itemize}
+\item einfach visualisierbar: Und-Oder-Graph
+\item Inferenz durch Vorwärts- und Rückwärtsverkettung, sehr natürliche und leicht verständliche Algorithmen
+\item Folgerungsentscheidung kann in linearer Zeit geschehen!
+\end{itemize}
+\begin{description}
+\item[Und-Oder-Graph\index{Und-Oder-Graph}:] einfache Visualisierung eines Horn-Klausel-Systems.
+\end{description}
+
+% Bild Folie 39
+\mypic{7}{und_oder_graph}
+
+Vorwärtsverkettung:
+\begin{itemize}
+\item gehe von Fakten aus
+\item arbeite dich vorwärts durch den Baum
+\item Ergebnis: alle durchführbaren Folgerungsentscheidungen
+\end{itemize}
+Rückwärtsverkettung:
+\begin{itemize}
+\item gehe von Anfrage aus
+\item arbeite dich rückwärts durch den Baum
+\item stoppe bei bekannten Fakten (Ground Truth, Axiome)
+\item Ergebnis: Wahrheitsgehalt der Anfrage
+\end{itemize}
+\begin{description}
+\item[Davis-Putnam-Logemann-Loveland\index{Davis-Putnam-Logemann-Loveland} (DPLL):] Rekursiver Modellprüfungs-Algorithmus mit folgenden Verbesserungen:
+\begin{itemize}
+\item früher Abbruch: benutzt $(A \vee B) \wedge (A \vee C) = true$, sobald $A = true$
+\item Einheitsklauseln (Klauseln mit nur einem Literal): Konjunktionen mit Einheitsklauseln sind nur wahr, wenn die Einheitsklauseln wahr sind \\ $\Rightarrow$ weitere Einschränkung des Suchraums
+\item reine Symbole: in $(A \vee \neg B)$, $(\neg B \vee \neg C)$, $(C \vee A)$ sind $A$ und $\neg B$ rein und $C$ unrein \\ Suche nach reinen Symbolen schränkt Raum möglicher Modelle stark ein!
+\end{itemize}
+\end{description}
+Algorithmus:
+\begin{center}
+\begin{tabular}{l}
+\verb|funktion| $DPLL(k,s,m)$: \\
+\verb|  # | $k$ Klauselmenge, $s$ Symbolmenge, $m$ Modell \\
+\verb|  if| alle Klauseln wahr in $m$: \verb|return | $true$ \\
+\verb|  if| eine Klausel falsch in $m$: \verb|return | $false$ \\
+\verb|  |$P, \, wert :=$ \verb| FINDE_EINHEITSKLAUSEL(|$k,s,m$\verb|)| \\
+\verb|  if | $P$ nicht leer: \\
+\verb|    return | $DPLL(k,s-P,$\verb|SETZE_IN_MODELL(|$P,wert,m$\verb|)|$)$ \\
+\verb|  |$P, \, wert :=$ \verb| FINDE_REINES_SYMBOL(|$k,m$\verb|)| \\
+\verb|  if | $P$ nicht leer: \\
+\verb|    return | $DPLL(k,s-P,$\verb|SETZE_IN_MODELL(|$P,wert,m$\verb|)|$)$ \\
+\verb|  |$P :=$ \verb| ERSTES(|$s$\verb|); | $rest :=$ \verb| REST(|$s$\verb|)| \\
+\verb|  return |$DPLL(k, rest,$\verb|SETZE_IN_MODELL(|$P,true,m$\verb|)|$)$ \verb| or| \\
+\verb|         |$DPLL(k, rest,$\verb|SETZE_IN_MODELL(|$P,false,m$\verb|)|$)$
+\end{tabular}
+\end{center}
+DPLL zur Überprüfung von Erfüllbarkeit:
+\begin{center}
+\begin{tabular}{l}
+\verb|function| $DPLL_ERFUELLBAR(s):$ \\
+\verb|  #| $s:$ Satz der Aussagenlogik \\
+\verb|  | $klauseln :=$ Klauselmenge der KNF von $s$ \\
+\verb|  | $symbole :=$ Menge der Symbole aus $s$ \\
+\verb|  return| $DPLL(klauseln, symbole, \{\})$
+\end{tabular}
+\end{center}
+
+\subsection{Semantisches Planen}
+
+\subsubsection*{Repräsentation von Plänen}
+
+Wie kann man Probleme so formulieren, dass
+\begin{itemize}
+\item ein Lösungsplan einfach zu erstellen ist?
+\item die Existenz einer Lösung bewiesen/widerlegt werden kann?
+\end{itemize}
+$\to$ Einschränkungsregeln für formelle Spezifikation von Zuständen, Zielen, Aktionen. Beispiele solcher Regelsysteme: STRIPS, ADL
+
+\subsubsection*{STRIPS\index{STRIPS}}
+
+\begin{itemize}
+\item \textbf{ST}anford \textbf{R}esearch \textbf{I}nstitute \textbf{P}roblem \textbf{S}olver
+\item "{}Urvater"{} vieler Planungssysteme
+\item sehr einfach aufgebaut
+\item teilweise eingeschränkt
+\end{itemize}
+Repräsentation von Zuständen:
+\begin{itemize}
+\item Konjunktion positiver aussagenlogischer Literale $$Blau \wedge Rund$$
+\item Literale erster Ordnung ($L1$) $$IstTasse(T1) \wedge IstUntertasse(U1) \wedge StehtAuf(T1,U1)$$
+\item $L1$ müssen funktions- und variablenfrei sein!
+\end{itemize}
+\textbf{\textsl{Closed-World Assumption}}
+\begin{itemize}
+\item geschlossene Welt: was nicht im Zustand vorkommt, ist falsch!
+\item keine Negationen im Zustand und Vorbedingungen, aber in Nachbedingungen benötigt:
+$$b \quad \Rightarrow \quad \begin{array}{l} a \textrm{ darf nicht im Weltmodell vorkommen} \\ b \textrm{ muss im Weltmodell vorkommen} \end{array}$$
+\item Negationen in Nachbedingungen:
+$$\neg c \wedge d \quad \Rightarrow \quad \begin{array}{l} \textrm{entferne } c \textrm{ aus dem Weltmodell} \\ \textrm{füge } d \textrm{ dem Weltmodell hinzu} \end{array}$$
+\end{itemize}
+Repräsentation von Zielen:
+\begin{itemize}
+\item Ziel: teilweise spezifizierter Zustand
+\item angegeben als Konjunktion von positiven Literalen
+$$StehtAuf(T1,U1) \wedge StehtAuf(U1,Tisch)$$
+\item ein Zustand $S$ erfüllt ein Ziel $Z$, wenn er alle Literale in $Z$ enthält
+$$StehtAuf(T1,U1) \wedge StehtAuf(U1,Tisch) \wedge StehtAuf(Teller,Tisch)$$
+erfüllt $$StehtAuf(T1,U1) \wedge StehtAuf(U1,Tisch)$$
+\end{itemize}
+Aktionen werden angegeben durch
+\begin{itemize}
+\item Aktionsname
+\item Parameter
+\item Vorbedingungen
+\item Effekte
+\end{itemize}
+$$A = (N_A,P_A,V_A,E_A)$$
+\begin{center}
+\begin{tabular}{l}
+$(StelleAuf,$ \\ $(Obj1,Obj2),$ \\ $IstUntersatz(Obj2) \wedge Auf(Obj1,Tisch) \wedge Auf(Obj2,Tisch),$ \\ $\neg Auf(Obj1,Tisch \wedge Auf(Obj1,Obj2))$
+\end{tabular}
+\end{center}
+Alternative Schreibweise:
+\begin{center}
+\begin{tabular}{lll}
+\textbf{Action} ( & \multicolumn{2}{l}{$StelleAuf(Obj1, Obj2),$} \\
+& \textbf{Vorbed:} & $IstUntersatz(Obj2) \wedge$ \\ && $Auf(Obj1, Tisch) \wedge$ \\ && $Auf(Obj2, Tisch),$ \\
+& \textbf{Effekt:} & $\neg Auf(Obj1, Tisch) \wedge$ \\ && $Auf(Obj, Obj2)$ \qquad \quad )
+\end{tabular}
+\end{center}
+Semantik:
+\begin{description}
+\item[Anwendbarkeit:] Eine Aktion ist anwendbar auf allen Modellen $M$, die ein Modell für die Vorbedingung $V_A$ sind.
+\item[Ergebnis:] Das Ergebnis $M'$ der Ausführung einer Aktion $A$ auf einem Modell $M$ erhält man durch
+\begin{itemize}
+\item entfernen aller negativen Literale des Effekts $E_A$ aus $M$
+\item hinzufügen aller positiven Literale aus $E_A$ zu $M$.
+\end{itemize}
+\end{description}
+Einschränkunen von STRIPS:
+\begin{itemize}
+\item Literale müssen funktionsfrei sein
+\begin{itemize}
+\item endliche Grammatik
+\item jede Aktion kann als endliche aussagenlogische Konjunktiondargestellt werden
+\item Lösbarkeitsbeweis einfach
+\end{itemize}
+\item Nur positive Literale $l$, "{}geschlossene Welt"{}
+\begin{itemize}
+\item einfachere Planung
+\item aber: Falsch-Sachverhalte nur implizit
+\end{itemize}
+\item keine Quantisierung
+\end{itemize}
+$\Rightarrow$ STRIPS-Aussagen oft lang und unübersichtlich
+
+\subsubsection*{ADL\index{ADL}}
+
+\begin{itemize}
+\item \textbf{A}ction \textbf{D}escription \textbf{L}anguage: Weiterentwicklung von STRIPS
+\item "{}offene Welt"{}: Was nicht im Zustand vorkommt, ist unbekannt.
+\item negative Literale und Disjunktionen erlaubt
+\item Effekt $\neg P \wedge Q$:
+\begin{itemize}
+\item füge $\neg P$ und $Q$ hinzu
+\item lösche $P$ und $\neg Q$
+\end{itemize}
+\item Gleichheits-Prädikat "{}="{} eingebaut
+\begin{itemize}
+\item $StelleAuf(T1,T1)$ nicht mehr möglich
+\end{itemize}
+\end{itemize}
+Typüberprüfung
+\begin{itemize}
+\item Typüberprüfung benötigt für Ausführbarkeit bestimmter Aktionen
+\item in STRIPS nur explizit (als Prädikat): $IstUntersetzer(x)$, $IstTasse(y)$
+\item häufig weggelassen (Schreibarbeit!), aber eigentlich nötig
+\item in ADL implizit möglich:
+\begin{center}
+\begin{tabular}{lll}
+\textbf{Action} ( & \multicolumn{2}{l}{$StelleAuf(Obj1 \, : \, Untersatz, \,\, Obj2 \, : \, Manipulierbar),$} \\
+& \textbf{Vorbed:} & $Auf(Obj1, Tisch) \wedge$ \\ && $Auf(Obj2, Tisch),$ \\
+& \textbf{Effekt:} & $\neg Auf(Obj1, Tisch) \wedge$ \\ && $Auf(Obj, Obj2)$ \qquad \quad )
+\end{tabular}
+\end{center}
+\end{itemize}
+Suche im Zustandsraum ist einfach:
+\begin{itemize}
+\item keine Funktionssymbole \\ $\Rightarrow$ endlicher Zustandsraum \\ $\Rightarrow$ Standard-Algorithmen zur Baumsuche (z.B. A*)
+\item Transformation Vorbedingungen $\Leftrightarrow$ Effekte bijektiv \\ $\Rightarrow$ Suche auch rückwärts möglich
+\end{itemize}
+Aber:
+\begin{itemize}
+\item Zustandsraum oft sehr groß
+\item naive Suche sehr ineffizient
+\item benötigt gute Heuristik oder Segmentierung in Teilprobleme
+\end{itemize}
+Heuristiken für Zustandsraumsuche
+\begin{itemize}
+\item versuche, die Suchtiefe einzuschränken
+\item Def. \textbf{Heuristikfunktion}\index{Heuristikfunktion}: $$h = H(M_0,M_1)$$ angenommene maximale Anzahl von Aktionen, um von $M_0$ zu $M_1$ zu kommen
+\item beschränke Suche auf Teilbaum der Tiefe $h$
+\item wenn nicht gefunden: suche je eine Ebene tiefer
+\item Problem: finde möglichst gute Heuristikfunktionen
+\end{itemize}
+\subsubsection*{Vorranggraph\index{Vorranggraph}}
+Vor- und Nachbedingungen können zur Problemdekomposition verwendet werden. Parralelisierung möglich? $\to$ Vorranggraph \\
+Vorranggraph ermöglicht:
+\begin{itemize}
+\item Parallelisierung der Planung
+\item Parallelisierung der Ausführung
+\item bei dynamischen Effekten (Hindernisse, etc.)
+\begin{itemize}
+\item Blockierung des momentanen Teilplans
+\item zuerst Ausführung anderer Teilpläne
+\item dann Überprüfung, ob blockierter Teilplan jetzt ausführbar (Hindernis jettz weg?)
+\item ggf. Neuplanung nur ab der letzten Gabelung notwendig
+\end{itemize}
+\end{itemize}
+
+\subsection{Umweltmodell\index{Umweltmodell}}
+
+Das Umweltmodell eines kognitiven Systems bildet die reale Umwelt auf eine innere Repräsentation ab. Logisch-semantische Beziehungen genügen für ein System mit Aktorik nicht; zusätzlich:
+\begin{itemize}
+\item geometrisches Modell: Ausdehung und Lage von Objekten
+\item topologisches Modell: (teil-geometrische) Beziehungen zwischen Objekten
+\end{itemize}
+
+
+\begin{description}
+\item[Geometrisches Modell:] Anwendungen:
+\begin{itemize}
+\item Bahnplanung feinkörnig
+\item aktives Messen
+\item Objekterkennung (Basisobjekte)
+\item fahren von $x_s,y_s,z_s$ nach $x_e,y_e,z_e$
+\end{itemize}
+\item[Topologisches Modell:] Anwendungen:
+\begin{itemize}
+\item Planung (Manipulationsplanung, mittlere Körnigkeit, Bewegungsplanung)
+\item "{}fahre von Raum1 nach Raum5"{}
+\end{itemize}
+Über topologische Modelle:
+\begin{itemize}
+\item Anordnung von Objekten und Umwelt relativ zueinander gespeichert
+\item abgeleitet aus geometrischen Modellen: \\ Pfade z.B. aus Voronoi.Diagrammen, Quadtree, Potentialfeldern
+\item grobe Aktionsplanung aus topologischen Modellen
+\item kurzfristige Verwendung anderer Modelle bei unerwarteten Hindernissen (geometrischer Bodenplan, ad-hoc erzeugte Kantenmodelle aus Laserscan, Kamera)
+\end{itemize}
+\item[Semantisches Modell:] Anwendung: Planung auf Aufgabeneben $\to$ "{}fahre durch alle Büros"{} \\
+Über semantische Modelle:
+\begin{itemize}
+\item besondere Bedeutung im Rahmen der Mensch-Maschine-Kommunikation
+\item belegte Fläche als Objekt klassifiziert (z.B Schrank, Stuhl)
+\item eingeordnet in topologische Beschreibung
+\item Objekteigenschaften verwertbar: Objektzustand (Tür offen, Tasse leer); äußere Erscheinung des Objekts (Form, Farbe) als Diskriminator und Hilfe für die Sensorik; geometrisches Objektmodell für Greifplanung etc.
+\end{itemize}
+zugehörig zu semantischen Umweltbeschreibungen:
+\begin{itemize}
+\item Funktion eines Objektes
+\item Landmarken
+\item geometrische Objekte
+\item topologische Umweltdarstellungen
+\item Positionen
+\end{itemize}
+\end{description}
+
+Umweltrepräsentation der Information:
+\begin{itemize}
+\item Pfade \item Freiraum \item Objekte \item gemischte Modelle
+\end{itemize}
+
+\subsubsection*{Pfade}
+
+Normal: 2-dimensionaler Raum
+\begin{itemize}
+\item Polygonale Beschreibung der Objekte
+\item Pfad: lineare oder nichtlineare Verbindung zweier Punkte im Operationsraum
+\item Speicherung der Umwelt und Planungsinformation
+\item Repräsentation als ungerichteter Graph
+\end{itemize}
+Sichtbarkeitsgraphen:
+\begin{itemize}
+\item einfache Umweltdarstellung, partielle Modellierung
+\item kollisionsfreie Bewegung nur auf gespeicherten Pfaden
+\item Sichtbarkeitsgraphen zur automatischen Generierung von Pfaden
+\end{itemize}
+Erstellung eines Sichtbarkeitsgraphen:
+\begin{center}
+\begin{tabular}{l}
+\verb|for i = 1..#Obj| \\
+\verb|  for j = 1..#Objekte[i]| \\
+\verb|    for k = i..#Obj| \\
+\verb|      for l = 1..#Objekte[k]| \\
+\verb|        if (Sichtbarkeitstest(objekte[i][j], objekte[k],[l] == ok)| \\
+\verb|          neuer Pfad(i,j,k,l)|
+\end{tabular}
+\end{center}
+\begin{description}
+\item[Voronoi-Diagramme\index{Voronoi-Diagramme}:] Fahrwege liegen auf maximalem Abstand zu den Hindernissen. Das Voronoi-Diagramm ist der duale Graph der Delaunay-Triangulation.
+\end{description}
+
+\subsubsection*{Freiraum}
+
+\begin{itemize}
+\item Projektion der realen Welt in 2D/3D-Grundrissdarstellung
+\item kollisionsfrei befahrbare Freiräume in geeignete Bereiche zerlegt
+\item vorhandene Objekte und Hindernisse nicht berücksichtigt
+\end{itemize}
+Freiraumgraph:
+\begin{itemize}
+\item Knoten: Freiraumbereiche
+\item Kanten: Verbindung der Gebiete
+\end{itemize}
+Vorteile:
+\begin{itemize}
+\item geringere Komplexität der Wegplanung
+\item reduzierter Zeit- und Rechenaufwand
+\item Fahrsicherheitsüberlegungen deutlich vereinfacht
+\item Verbesserung der Anpassungsfähigkeit der Algorithmen an verschiedene Umwelten
+\end{itemize}
+Darstellungsformen der Freiflächen:
+\begin{itemize}
+\item Kacheln (Quader)
+\begin{itemize}
+\item Darstellung von besetzten Räumen durch orthogonale begrenzende Linien (Näherungen)
+\item Verlängerung der Linien bis zum nächsten besetzten Raum
+\item bildet Mosaik von besetzten und freien Kacheln/Quadern
+\item freie Kacheln $\to$ Graph, durch den Bewegung möglich ist
+\end{itemize}
+Quadtree-/Octtree-Aufteilung:
+\begin{itemize}
+\item hierarchische Aufteilung in freie und belegte Zellen
+\item Aufteilung teilbelegter Zellen in 4 (2D) bzw. 8 (3D) Unterzellen
+\item Resultat: Baumstruktur
+\item Pfadplanung: Aufstieg von Start- und Zielknoten bis zum ersten gemeinsamen Knoten; Liste besuchter Knoten: Pfad
+\end{itemize}
+\item konvexe Polygone (Polyeder)
+\end{itemize}
+
+\subsubsection*{Objekte}
+
+\begin{itemize}
+\item Darstellung der Objekte der realen Umwelt (Türen, Wände, Hindernisse)
+\item 3-dim. Darstellung der Umgebung aus Sensorwahrnehmungen
+\item Projektion auf $x$-$y$-Ebene für Navigation bodengebundener Roboter ausreichend
+\end{itemize}
+verschiedene Darstellungen:
+\begin{itemize}
+\item Kantenmodelle: \\
+Ermittlung von markanten Punkten. Verbinden durch geeignete Kanten auf Oberfläche des Objekts
+\item Oberflächenmodelle
+\begin{itemize}
+\item Nachbildung der Objektoberflächen
+\item Darstellung ebener Flächenelemente mit Polygonen
+\item gekrümmte Flächenelemente:
+\begin{itemize}
+\item mathematische Grundflächen (Zylinder, Kegel, Torusflächen)
+\item Bezier-Flächen (Erweiterung des Ansatzes der Bezierkurven): \\
+gegeben ist ein Gitter von Führungspunkten $P_{ij}$ mit $0 \leq i \leq N$ und $0 \leq j \leq M$. Damit ist die Fläche beschrieben durch $$F(u,v) = \sum\limits_{i=0}^N \sum\limits_{j=0}^M P_{ij} \cdot B_{i,N}(u) \cdot B_{j,M}(v)$$ mit
+\begin{eqnarray*}
+B_{i,N}(u) &=& (1-u) B_{i,N-1}(u) + uB_{i+1,N-1}(u) \quad , \quad B_{i,0} = 1 \\
+B_{j,M}(v) &=& (1-v) B_{j,M-1}(v) + uB_{j+1,M-1}(v) \quad , \quad B_{j,0} = 1
+\end{eqnarray*}
+Die $B_{i,N}$ bzw. $B_{j,M}$ heißen auch Bernsteinpolynome.
+\item näherungsweise durch Freiformflächen (Patches)
+\end{itemize}
+\end{itemize}
+\item Volumenmodelle:
+\begin{itemize}
+\item Unterscheidung von Raumpunkten hinsichtlich ihrer Lage zum Objekt (innen-/außenliegend)
+\item Repräsentationsmöglichkeiten: Begrenzungsflächenmethode, Grundkörperdarstellung, Zellenzerlegung (Octtree), Volumenapproximation, einhüllende Quader, Geradensegmente
+\end{itemize}
+\end{itemize}
+
+\subsubsection*{Modelle}
+
+Aufgliederung des benötigten Wissens:
+\begin{itemize}
+\item Ausführung von Aufgaben
+\begin{itemize}
+\item semantisches Aufgabenmodell
+\item Umweltmodell vorher, nachher
+\end{itemize}
+\item Bewegung über Grund in 2D, Bewegung des Arms in 3D
+\begin{itemize}
+\item statische Umweltkarte (geometrisch und topologisch)
+\item dynamische Hinderniserfassung in 3D
+\item Freiraum-, Hindernismodell
+\end{itemize}
+\item Manipulation von Objekten
+\begin{itemize}
+\item Objektpositionen
+\item geometrische und topologische Objektmodelle
+\end{itemize}
+\end{itemize}
+
+\subsection{Geometrisches Planen}
+
+\subsubsection*{Grundlagen der Bahnplanung\index{Bahnplanung}}
+
+Bewegung eines Roboters:
+\begin{itemize}
+\item Zustandsänderungen über der Zeit (Trajektorie)
+\item relativ zu stationärem Koordinatensystem (kartesischer Raum, Gelenkwinkelraum)
+\item häufig Gütekriterien, Neben-, Randbedingungen
+\end{itemize}
+Bekannt:
+\begin{itemize}
+\item $S_{start}$: Zustand zum Startzeitpunkt
+\item $S_{ziel}$: Zustand zum Zielzeitpunkt
+\end{itemize}
+Gesucht:
+\begin{itemize}
+\item $S_I$: Zwischenzustände (Stützpunkte)
+\item glatte, stetige Trajektorie
+\end{itemize}
+Bahnplanungsverfahren nach Zustandsraum:
+\begin{itemize}
+\item Gelenkwinkelzustandsraum (Konfigurationsraum)
+\item 3-dim. euklidischer Raum
+\item Sensorzustandsraum, Objektzustandsraum, \dots
+\end{itemize}
+Bahnplanungsverfahren nach Art des Roboters:
+\begin{itemize}
+\item Bahnplanung für Manipulatoren
+\item Bahnplanung für mobile Roboter
+\item Bahnplanung für Laufmaschinen und antropomorphe Systeme
+\item Greif- und Montageplanung
+\end{itemize}
+
+\subsubsection*{Bahnplanung im Gelenkwinkelraum}
+
+\begin{itemize}
+\item Trajektorie als Funktion der Gelenkwinkel
+\item Ausführung solcher Trajektoren durch
+\begin{itemize}
+\item Steuerung der Achsen unabhängig voneinander (Punkt zu Punkt) oder
+\item achsinterpolierte Steuerung (Bewegung aller Achsen beginnt und endet zum gleichen Zeitpunkt) erfolgen
+\end{itemize}
+\item Bahnverlauf muss im kartesischen Raum nicht definiert sein
+\item Vorteile: einfach; keine Singularitäten
+\end{itemize}
+
+\subsubsection*{Bahnplanung im kartesischen Raum}
+
+\begin{itemize}
+\item Trajektorie angegeben als Funktion der Endeffektorposition
+\item Funktionen z.B.: lineare Bahnen, Polynombahnen, Splines
+\item Vorteile:
+\begin{itemize}
+\item Verlauf der Trajektorie explizit in 3D
+\item einfach nachvollziehbar, visualisierbar
+\end{itemize}
+\item Nachteile:
+\begin{itemize}
+\item für jeden Punkt muss Gelenkwinkelrücktransformation berechnet werden
+\item Trajektorie nicht immer ausführbar (Arbeitsraumbegrenzung, Singularitäten des Roboters)
+\end{itemize}
+\end{itemize}
+
+\subsubsection*{Bahnplanungs-Schema}
+
+gegeben: Robotermodell (Geometrie, Kinematik), Umweltmodell
+
+\begin{enumerate}
+\item Berechnung des Konfigurationsraums $K$
+\item Berechnung des Hindernisraums $H$
+\item Berechnung des Freiraums $F = K \backslash H$
+\item Zerlegung des Freiraums in Unterräume
+\item Bahnplanung im Unterraum
+\item Integration der lokalen Lösungen in Gasamtlösung
+\end{enumerate}
+
+\subsubsection*{Konfiguration}
+
+\begin{description}
+\item[Konfiguration $k_R$:] beschreibt den Zustand eines Roboters $R$
+\begin{itemize}
+\item im euklidischen Raum durch Lage und Orientierung
+\item im Gelenkwinkelraum durch die Werte der Gelenke
+\end{itemize}
+\item[Konfigurationsraum $K_R$:] Raum aller möglichen Konfigurationen von $R$
+\item[Weg $w$ von $k_{start}$ bis $k_{ziel}$:] stetige Abbildung $$w \, : \, [0,1] \to K \quad \textrm{mit} \quad w(0) = k_{start} \, , \, w(1) = k_{ziel}$$
+\item[Arbeitsraum-Hindernis $h_{A,O}$:] Raum, der von einem Objekt $O$ im Arbeitsraum $A$ eingenommen wird
+\item[Konfigurationsraum-Hindernis $h_{K,O}$:] Raum, der von einem Objekt $O$ im Konfigurationsraum $K$ eingenommen wird
+\item[Hindernisraum $H$:] \quad $$H = \bigcup\limits_{O} h_{K,O}$$
+\end{description}
+
+\subsubsection*{Freiraum}
+
+\begin{itemize}
+\item Freiraum $F_R \, : \, F_R = K_R \backslash H$
+\item Aufwand für Freiraumberechnung: $O(m^n)$ mit
+\begin{itemize}
+\item $n$: Anzahl der Freiheitsgrade des Roboters
+\item $m$: Anzahl der Hindernisse
+\end{itemize}
+\item Deshalb oft approximative Verfahren zur Vereinfachung des Freiraums
+\begin{itemize}
+\item Sichtgraphen
+\item Quadtree, Octtree
+\end{itemize}
+\end{itemize}
+
+\subsection{Bahnplanung in 2D}
+
+Einfacher Algorithmus: "{}Strassenkarten"{} \\
+gegeben: 2-dim. Weltmodell, Start und Ziel \\
+gesucht: güstigste Verbindung von Start zu Ziel \\
+Lösung:
+\begin{enumerate}
+\item konstruiere Netz von Wegen $W$ in $F_R$
+\item bilde $k_{start}$ und $k_{ziel}$ auf $W$ ab: $(W(k_{start}), W(k_{ziel})$
+\item suche Weg $w$, der $W(k_{start})$ mit $W(k_{ziel})$ verbindet
+\end{enumerate}
+
+\subsubsection*{Wegkonstruktion}
+
+Wegkonstruktion mit
+\begin{itemize}
+\item Retraktionverfahren (z.B. Voronoi-Diagramm)
+\item Sichtgraphen
+\item Zellzerlegungsmethoden
+\end{itemize}
+Suche im Wegnetz mit z.B.
+\begin{itemize}
+\item A*-Algorithmus (Baumsuche)
+\item euklidischer Abstand
+\item Potentialfeld
+\end{itemize}
+
+\begin{description}
+\item[Retraktion\index{Retraktion}:] Sei $X$ eine Menge und $Y \subset X$. Eine surjektive Abbildung $$p \, : \, X \to Y$$ heisst Retraktion genau dann, wenn $p$ stetig ist und $p(y) = y$ für alle $y \in Y$ gilt. \\
+D.h. die Abbildung der Menge $X$ auf ihre Teilmenge $Y$, wobei die Menge $Y$ auf sich selbst abgebildet wird. Für die Bahnplanung gilt:
+\begin{itemize}
+\item $Y$ ist ein Netz von eindimensionalen Kurven (Wegenetz).
+\item Retraktionsmethoden unterscheiden sich in Wahl von $p$.
+\end{itemize}
+\end{description}
+
+\subsubsection*{Sichtgraphen}
+
+Konstruktion:
+\begin{itemize}
+\item Verbinde jedes Paar von Eckpunkten auf dem Rand von $F_R$ durch gerades Liniensegment, wenn das Segment kein Hindernis schneidet.
+\item Verbinde $k_{start}$ mit $k_{ziel}$ analog dazu.
+\end{itemize}
+Anmerkungen:
+\begin{enumerate}
+\item Wege sind nur "{}halbfrei"{} (nicht kollisionsfrei), da Hinderniskanten auch Wegsegmente sein können. \\ Abhilfe: Erweiterung der Hindernisse
+\item Wenn ein Weg gefunden ist, ist es auch der kürzeste Weg.
+\item Methode ist exakt, wenn Roboter nur 2 translatorische Freiheitsgrade hat und sowohl Roboter als auch Hindernisse durch Polygone dargestellt werden können.
+\item Methoden auch im $R^3$ anwendbar, jedoch sind die gefundenen Wege i.A. keine kürzesten Wege mehr.
+\end{enumerate}
+
+\subsubsection*{Kürzester Pfad im Graphen}
+
+vom Startknoten ausgehend:
+\begin{itemize}
+\item wähle Nachbarknoten $N_k$ so, dass Evaluationsfunktion $f(N_k)$ minimal
+\item suche von $N_k$ ausgehend weiter
+\item wenn $f(N_k)$ nicht mehr kleiner wird, mache weiter oben im Baum weiter
+\item Problem: $f(N_k)$ darf nicht vom Teilbaum an $N_k$ abhängen! \\ (Würden wir den kennen, bräuchten wir nicht suchen.)
+\item Lösung: verwende Heuristik $h(N_k)$
+\item beliebt für die Heuristikfunktion in 2D: euklidischer Abstand $$h(N_k) = ||N_k - N_{ziel}||$$
+\item rein heuristikbasierte Suche ist nicht optimal und führt nur unter Einschränkungen zum Ziel
+\item A*-Algorithmus\index{A*-Algorithmus}: \\ mit $g(N_k)$ Kosten zum Erreichen von $N_k$
+\item beweisbar optimal $$f(N_k) = g(N_k) + h(N_k)$$
+\end{itemize}
+
+
+
+
+
+
+
+
+
+
+
+
+

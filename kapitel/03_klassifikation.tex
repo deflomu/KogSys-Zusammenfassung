@@ -1,0 +1,148 @@
+% !TeX root = summary.tex
+
+\section{Klassifikation}
+
+\subsection{Supervised -- Unsupervised Training}
+
+\begin{description}
+\item[Supervised Training] Die zu erkenndende Klasse ist für jede Auswahl in den Trainingsdaten bekannt. Benötigt a priori Wissen von nützlichen Eigenschaften und Kenntnis / Bezeichnung von jedem Trainingsmerkmal (Kosten!).
+\item[Unsupervised Training] Die Klasse ist nicht bekannt und die Struktur muss automatisch herausgefunden werden.
+\end{description}
+
+\subsection{Parametrisch -- Nicht-parametrisch}
+
+Parametrisch:
+\begin{itemize}
+\item grundlegende Aufteilungswahrscheinlichkeit annehmen
+\item Parameter der Aufteilung abschätzen
+\item Beispiel: "{}Gauss Klassifikation"{}
+\end{itemize}
+Nicht-parametrisch:
+\begin{itemize}
+\item keine Aufteilung annehmen
+\item Fehlerwahrscheinlichkeit oder Fehlerkriterium direkt aus den Trainingsdaten berechnen
+\item Beispiele: Parzen Fenster, $k$-nächster Nachbar, Perzeptron
+\end{itemize}
+
+\subsubsection*{Parzen Fenster}
+
+Es werden keine Annahmen über die Verteilung gemacht, stattdessen wird $p(x)$ direkt aus den Daten geschätzt.
+\begin{itemize}
+\item wähle ein Fenster mit dem Volumen $V$
+\item zähle die Anzahl Samples, die in das Fenster fallen
+\item $p(x) \thickapprox \frac{k/n}{V}$, $k = $ Anzahl, $n = $ Anzahl Samples
+\end{itemize}
+Probleme:
+\begin{itemize}
+\item Volumen zu groß \\ $\Rightarrow$ Auflösung geht verloren
+\item Volumen zu klein \\ $\Rightarrow$ unbeständig, schlechte Abschätzung
+\end{itemize}
+Setze $$V_n = \frac{1}{\sqrt{n}}$$
+
+\subsubsection*{$k$-nächster Nachbar}
+
+Volumen als Funktion der Daten. Verwende die $k$ nächsten Nachbarn für die Abschätzung. Setze $$k = \sqrt{n}$$ Um Sample $x$ zu klassifizieren:
+\begin{itemize}
+\item finde $k$ nächste Nachbarn von $x$
+\item bestimme die am häufigsten vorkommende Klasse in diesen $k$ Samples
+\item ordne $x$ dieser Klasse zu
+\end{itemize}
+Probleme: Für eine endliche Anzahl von Samples $n$ sollte $k$ möglichst
+\begin{itemize}
+\item groß sein für eine gute Abschätzung
+\item klein sein, um zu garantieren, dass alle $k$ NAchbarn nah beieinander sind
+\end{itemize}
+Trainingsdatenbanken müssen groß sein.
+
+\subsection{Bayes Entscheidungstheorie}
+
+Bayes Regel\index{Bayes Regel}: $$P(\omega_j | x) = \frac{p(x | \omega_j) P(\omega_j)}{p(x)} \quad \textrm{wobei} \quad p(x) = \sum\limits_{j} p(x | \omega_j) P(\omega_j)$$
+A priori Wahrscheinlichkeit: $$P(\omega_j)$$
+A posteriori Wahrscheinlichkeit: $$P(\omega_j | x)$$
+Klassenbedingte Wahrscheinlichkeitsdichte: $$p(x | \omega_j)$$
+
+\subsection{Zwei Klassen Fall}
+
+$$P(error | x) = \left\{ \begin{array}{cl} P(\omega_1 | x) & \textrm{wenn wir uns für } \omega_2 \textrm{ entscheiden} \\ P(\omega_2 | x) & \textrm{sonst} \end{array} \right.$$
+Der Fehler ist minimiert, wenn wir uns entscheiden für:
+\begin{itemize}
+\item $\omega_1$ wenn $P(\omega_1 | x) > P(\omega_2 | x)$ \\ $\omega_2$ sonst
+\item $\omega_1$ wenn $p(x | \omega_1)P(\omega_1) > p(x | \omega_2)P(\omega_2)$ \\ $\omega_2$ sonst
+\end{itemize}
+Mehr Klassen:
+\begin{itemize}
+\item $\omega_i$ wenn $P(\omega_i | x) > P(\omega_j | x)$ für alle $i \not= j$
+\end{itemize}
+
+\subsection{Klassifizierende Diskriminanzfunktionen}
+
+$$g_i(x) \quad , \quad i = 1, \dots, c$$
+Ordne $x$ der Klasse $\omega_i$ zu, wenn $g_i(x) > g_j(x)$ für alle $j \not= i$
+\begin{eqnarray*}
+g_i(x) &=& P(\omega_i | x) \\ &=& \frac{p(x | \omega_i) P(\omega_i)}{\sum\limits_{j=1}^c p(x | \omega_j)P(\omega_j)} \\ g_i(x) &=& p(x | \omega_i) P(\omega_i) \\
+g_i(x) &=& \log(p(x | \omega_i)) + \log(P(\omega_i))
+\end{eqnarray*}
+
+\subsection{Gauss Klassifizierer\index{Gauss Klassifizierer}}
+
+Eindimensionale Normaldichte: $$p(x) = \frac{1}{\sqrt{2\pi} \sigma} e^{- \frac{1}{2} \left( \frac{\myvector{x} - \myvector{\mu}}{\sigma} \right)^2} \sim N(\myvector{\mu},\sigma^2)$$
+Mehrdimensionale Dichte: $$p(x) = \frac{1}{(2\pi)^{d/2}|\Sigma|^{1/2}}e^{- \frac{1}{2} ( \myvector{x} - \myvector{\mu})^t \Sigma^{-1} (\myvector{x} - \myvector{\mu}) } \sim N(\myvector{\mu},\Sigma)$$
+$$g_i(x) = - \frac{1}{2} (x - \mu_i)^t \sum_i^{-1} (x - \mu_i) - \frac{d}{2} \log(2\pi) - \frac{1}{2} \log|\Sigma_i| + \log P(\omega_i)$$
+Für jede Klasse $i$ muss folgendes aus den Trainingsdaten berechnet werden:
+\begin{itemize}
+\item Kovarianz-Matrix $\Sigma_i$ \item Mittelwertsvektor $\myvector{\mu_i}$
+\end{itemize}
+\textbf{Bestimmung der Parameter}
+\begin{itemize}
+\item MLE, Maximum Likelihood Estimation
+\item Für den mehrdimensionalen Fall:
+$$\myvector{\mu} = \frac{1}{N} \sum\limits_{k=1}^N \myvector{x_k}$$ $$\Sigma = \frac{1}{N} \sum\limits_{k=1}^N (\myvector{x_k} - \myvector{\mu})(\myvector{x_k} - \myvector{\mu})^T$$
+\end{itemize}
+
+\subsection{Probleme beim Klassifikationsentwurf}
+
+Eigenschaften:
+\begin{itemize}
+\item Welche und wie viele Eigenschaften sollten gewählt werden?
+\item Beliebige Eigenschaften?
+\item Je mehr desto besser?
+\item Wenn zusätzliche Eigenschaften nicht nützlich sind, sollen sie dann automatisch ignoriert werden?
+\end{itemize}
+\textbf{Der Unsegen der Dimensionalität}
+\begin{itemize}
+\item Allgemein gilt: das Hinzufügen von Eigenschaften verschlechtert die Performance!
+\item Grund: Trainingsdaten vs. Anzahl der Parameter; beschränkte Trainingsdaten
+\item Lösung: Eigenschaften sorgfältig wählen; Dimension verringern; Principle Component Analysis
+\end{itemize}
+
+
+\subsection{Risiko}
+
+\begin{itemize}
+\item Es kann zu Entscheidungsverweigerungen kommen in mehrdeutigen Fälle ($\to$ Bandbreite)
+\item Bewerte die Kosten für jede Entscheidung (etwas Kostenaufwendiger als anders) $$\Omega = \{ \omega_1, \dots, \omega_s \} \,\, s \textrm{ Zustände der Eigenschaften}$$ $$A = \{ \alpha_1, \dots, \alpha_a \} a \textrm{ mögliche Aktionen}$$
+\end{itemize}
+
+\textbf{Verlustfunktion}
+$\lambda(\alpha_i | \omega_j)$: Verlust der Aktion $\alpha_i$ beim gegebenen Zustand $\omega_j$ $$P(\omega_j | \myvector{x}) = \frac{P(\myvector{x} | \omega_j) P(\omega_j)}{P(\myvector{x})}$$
+Angenommener Verlust von Aktion $\alpha_i$: $$R(\alpha_i | \myvector{x}) = \sum\limits_{j=1}^s \lambda(\alpha_i | \omega_j) P(\omega_j | \myvector{x}) \qquad \textrm{(bedingtes Risiko)}$$
+Minimierung des angenommenen Verlusts indem man die Aktion $\alpha_i$ wählt, die das bedingte Risiko minimiert.
+\subsubsection*{Zwei Kategorien Fall}
+$$\lambda(\alpha_i | \omega_j) \triangleq \lambda_{ij}$$
+\begin{eqnarray*}
+R(\alpha_1 | \myvector{x}) &=& \lambda_{11} P(\omega | \myvector{x}) + \lambda_{12} P(\omega_2 | \myvector{x}) \\
+R(\alpha_2 | \myvector{x}) &=& \lambda_{21} P(\omega | \myvector{x}) + \lambda_{22} P(\omega_2 | \myvector{x}) \\
+\end{eqnarray*}
+
+\begin{itemize}
+\item Wähle $\omega_1$, wenn $R(\alpha_1 | \myvector{x}) < R(\alpha_2 | \myvector{x})$
+\item Wähle $\omega_1$, wenn $(\lambda_{21} - \lambda_{11} P(\omega_1 | \myvector{x}) > (\lambda_{12} - \lambda_{22} P(\omega_2 | \myvector{x})$
+\item Wähle $\omega_1$, wenn $(\lambda_{21} - \lambda_{11} P(\myvector{x} | \omega_1)P(\omega_1) > (\lambda_{12} - \lambda_{22} P(\myvector{x} | \omega_2) P(\omega_2)$
+\item Wähle $\omega_1$, wenn $\frac{p(\myvector{x} | \omega_1)}{p(\myvector{x} | \omega_2)} > \frac{\lambda_{12} - \lambda_{22}}{\lambda_{21} - \lambda_{11}} \cdot \frac{P(\omega_2)}{P(\omega_1)}$
+\end{itemize}
+
+
+
+
+
+

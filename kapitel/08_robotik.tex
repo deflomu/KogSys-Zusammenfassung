@@ -1,0 +1,190 @@
+% !TeX root = summary.tex
+
+\section{Robotik\index{Robotik}}
+
+\subsection{Einführung}
+
+Aufbau eines kognitiven Systems:
+
+% Bild Folie 26
+\mypic{8}{kognitives_system}
+
+Aktion:
+\begin{itemize}
+\item Ausführung einer geplanten Handlung
+\item Ergebnis des Verarbeitungsschritts Perzeption $\to$ Kognition $\to$ Aktion
+\item Computersystem mit aktorischer Komponente: "{}Roboter"{}
+\begin{itemize}
+\item \textsl{robota [poln.]}: Fronarbeit
+\item zuerst verwendet in dem futur. Theaterstück "{}Rossum's Universal Robots"{} von Karel Capek
+\end{itemize}
+\end{itemize}
+
+Typen von Robotersystemen:
+\begin{itemize}
+\item Industrieroboter, automatische Fertigungssysteme, Roboterarme
+\begin{itemize}
+\item stationär, hochspezialisiert, allgemein verfügbar
+\item Anwendungen: Schweißen, Schneiden, Fräsen, Lackieren, Bestücken, \dots
+\end{itemize}
+\item Autonome mobile Roboter
+\begin{itemize}
+\item mobil, auf Transportaufgaben ausgerichtet, noch recht selten
+\item Anwendungen: Lagerhaltung, Waren-, Nachrichtentransport, Führungen, \dots
+\end{itemize}
+\item Humanoide Assistenzsysteme
+\begin{itemize}
+\item mobil, allgemeinbefähigt, Gegenstand aktueller Forschung
+\item Anwendungen: Fertigungs-, Haushaltsassistenz, Pflege, Begleitung, Schutz, \dots \\ $\to$ "{}Alleskönner"{}
+\end{itemize}
+\end{itemize}
+
+Probleme der Robotik:
+\begin{itemize}
+\item Kinematik:
+\begin{itemize}
+\item Lehre der Bewegung von Körpern
+\item Wohin bewegt sich der Roboter, wenn er Gelenk $a$ auf $45\degree$ einstellt?
+\item Wie müssen die Gelenke eingestellt werden, damit sich der Roboter von $A$ nach $B$ bewegt?
+\item Ist diese Bewegung möglich?
+\end{itemize}
+\item Dynamik
+\begin{itemize}
+\item Lehre von Geschwindigkeiten, Kräften, Momenten
+\item Wieviel Kraft muss der Roboter aufwenden, um Gelenk $a$ auf $45\degree$ einzustellen?
+\item Welche Kräfte entstehen bei Bewegung $A$ nach $B$?
+\item Geht dabei auch nichts kaputt?
+\end{itemize}
+\item Konfigurations-, Hindernis-, Freiraum, Kollisionsvermeidung, \dots
+\end{itemize}
+
+\subsection{Robotermodellierung}
+
+Zum Lösen der Probleme der Robotik Kinematik, Dynamik, Bahnplanung stellt man verschiedene Modelle auf den Roboter auf:
+
+% Bild Folie 31
+\mypic{3}{roboter_modell}
+
+\subsubsection*{Geometrische Modellierung}
+
+\textbf{Geometrisches Modell}
+\begin{itemize}
+\item dient als Grundlage zur Berechnung der Bewegung
+\item wird benutzt zur Ermittlung der wirkenden Kräfte und Momente
+\item stellt den Körper graphisch dar
+\item ist Ausgangspunkt der Abstandsmessung und Kollisionserkennung
+\end{itemize}
+Komplexitätsstufen des geometrischen Modells:
+\begin{enumerate}
+\item Bounding-Box-Modell\index{Bounding-Box-Modell}
+\begin{itemize}
+\item die Körper werden durch einhüllende Quader dargestellt
+\item wird in den ersten Schritten der Kollisiosvermeidung benutzt
+\end{itemize}
+\item Kantenmodell\index{Kantenmodell}
+\begin{itemize}
+\item die Körper werden durch Polygonzüge (Kanten) dargestellt
+\item wird zur schnellen Visualisierung (Rechenleistung für Grafik) benutzt
+\end{itemize}
+\item Volumenmodell\index{Volumenmodell}
+\begin{itemize}
+\item die Körper werden genau dargestellt
+\item wird für die Ermittlung der genauen Werte der Kollisionserkennung benutzt
+\end{itemize}
+\end{enumerate}
+
+\subsubsection*{Kinematische Modellierung}
+
+\begin{description}
+\item[Kinematisches Modell] ermittelt mit Hilfe des geometrischen Modells die Stellung (Position und Orientierung) von Körpern im Raum. \\ Eine \textbf{kinematische Kette} wird von mehreren Körpern gebildet, die durch Gelenke kinematisch verbunden sind (z.B. Roboterarm)
+\end{description}
+
+Zweck des kinematischen Modells:
+\begin{itemize}
+\item Bestimmung des Zusammenhangs zwischen Gelenkwerten und Stellungen
+\item Erreichbarkeitsanalyse: Welche Punkte sind anfahrbar, ohne dass innere oder äußere Kollisionen auftreten?
+\end{itemize}
+Aufstellung des kinematischen Modells erfolgt iterativ. Jedes Armelement entspricht einem starren Körper. (Bsp.: Puma 260, 6-achsiger Roboter, Basis und 6 Armelemente) \\
+Zu jedem Körper existiert ein Objekt-Koordinatensystem
+\begin{center}
+\begin{tabular}{l@{\,\,\,}l}
+Roboterbasis & OKS$_{Basis}$ \\
+Armelement 1 & OKS$_{Arm1}$ \\
+\vdots & \vdots \\
+Armelement 6 & OKS$_{Arm6}$
+\end{tabular}
+\end{center}
+Koordinatensysteme werden urch homogene Transformationen miteinander verknüpft.
+
+\subsubsection*{Wdh. homogene Koordinaten}
+
+\newcommand{\myrot}[1]{rot_{#1}(\alpha)}
+
+$4 \times 4$-Matrizen, die geschlossen Rotation und Translation ausdrücken.
+\begin{eqnarray*}
+p + Rot(\alpha , p') &=& \left( \begin{array}{cccc} \myrot{0,0} & \myrot{0,1} & \myrot{0,2} & 0 \\ \myrot{1,0} & \myrot{1,1} & \myrot{1,2} & 0 \\ \myrot{2,0} & \myrot{2,1} & \myrot{2,2} & 0 \\ 0 & 0 & 0 & 1 \end{array} \right) \left( \begin{array}{cccc} 1 & 0 & 0 & x' \\ 0 & 1 & 0 & y' \\ 0 & 0 & 1 & z' \\ 0 & 0 & 0 & 1 \end{array} \right) \left( \begin{array}{c} x \\ y \\ z \\ 1 \end{array} \right) \\
+&=& \left( \begin{array}{cccc} \myrot{0,0} & \myrot{0,1} & \myrot{0,2} & x' \\ \myrot{1,0} & \myrot{1,1} & \myrot{1,2} & y' \\ \myrot{2,0} & \myrot{2,1} & \myrot{2,2} & z' \\ 0 & 0 & 0 & 1 \end{array} \right)\left( \begin{array}{c} x \\ y \\ z \\ 1 \end{array} \right)
+\end{eqnarray*}
+
+\subsubsection*{Denavit-Hartenberg-Transformation}
+
+Die Transformation vom OKS des $i$-ten Armelements auf das OKS des $(i-1)$-ten Armelements erfolgt nach der \textbf{Denavit-Hartenberg (DH)-Konvention}\index{Denavit-Hartenberg-Konvention}:
+\begin{enumerate}
+\item[(a)] die Koordinatensysteme liegen in den Bewegungsachsen
+\item[(b)] die $z_{i-1}$-Achse liegt entlang der Bewegungsachse des $i$-ten Armelements
+\item[(c)] die $x_i$-Achse steht senkrecht zur $z_{i-1}$-Achse und zeigt von ihr weg
+\end{enumerate}
+($i \in \{ Basis, 1 , \dots , n \}$) \\[0,1cm]
+\textbf{DH-Parameter} \\
+Transformation von OKS$_{i-1}$ auf OKS$_i$:
+\begin{enumerate}
+\item Eine Rotation $\theta_i$ um die $z_{i-1}$-Achse, damit die $x_{i-1}$-Achse parallel zu der $x_i$-Achse liegt (wegen Voraussetzung (c)).
+$$R_{z_{i-1}}(\theta_i) = \left[ \begin{array}{cccc} \cos(\theta_i) & - \sin(\theta_i) & 0 & 0 \\ \sin(\theta_i) & \cos(\theta_i) & 0 & 0 \\ 0 & 0 & 1 & 0 \\ 0 & 0 & 0 & 1 \end{array} \right]$$
+\item Eine Translation $s_i$ entlang der $z_{i-1}$-Achse zu dem Punkt, wo sich $z_{i-1}$ und $x_i$ schneiden (wegen Voraussetzungen (b), (c)).
+$$T_{z_{i-1}}(s_i) = \left[ \begin{array}{cccc} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 1 & s_i \\ 0 & 0 & 0 & 1 \end{array} \right]$$
+\item Eine Translation $a_i$ entlang der $x_i$-Achse um die Ursprünge in Deckung zu bringen (wegen Voraussetzung (c)).
+$$T_{x_i}(a_i) = \left[ \begin{array}{cccc} 1 & 0 & 0 & a_i \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 1 & 0 \\ 0 & 0 & 0 & 1 \end{array} \right]$$
+\item Eine Rotation $\alpha_i$ um die $x_i$-Achse um die $x$- und $y$-Achse in Übereinstimmung zu bringen.
+$$R_{x_i}(\alpha_i) = \left[ \begin{array}{cccc} 1 & 0 & 0 & 0 \\ 0 & \cos(\alpha_i) & - \sin(\alpha_i) & 0 \\ 0 & \sin(\alpha_i) & \cos(\alpha_i) & 0 \\ 0 & 0 & 0 & 1 \end{array} \right]$$
+\end{enumerate}
+In MAtrizenschreibweise lautet die Denavit-Hartenberg-Transformation von Armelement $i-1$ auf $i$:
+\begin{eqnarray*}
+A_{i-1,i} &=& R_{z_{i-1}}(\theta_i) \cdot T_{z_{i-1}}(s_i) \cdot T_{x_i}(a_i) \cdot R_{x_i}(\alpha_i) \\
+&=& \left[ \begin{array}{cccc} \cos(\theta_i) & - \sin(\theta_i) \cdot \cos(\alpha_i) & \sin(\theta_i) \cdot \sin(\alpha_i) & a_i \cdot \cos(\theta_i) \\ \sin(\theta_i) & \cos(\theta_i) \cdot \cos(\alpha_i) & - \cos(\theta_i) \cdot \sin(\alpha_i) & a_i \cdot \sin(\theta_i) \\ 0 & \sin(\alpha_i) & \cos(\alpha_i) & s_i \\ 0 & 0 & 0 & 1 \end{array} \right]
+\end{eqnarray*}
+$\theta_i$ und $s_i$ sind variable Größen während der Bewegung des Roboters, abhängig von dessen spezieller Geometrie und Maßen. $\alpha_i$ und $a_i$ dagegen sind sowohl bei Rotations-, als auch bei Schubgelenken invariante Größen und müssen für die spätere Berechnung der direkten Kinematik nur einmal für jedes einzelne Armelement bestimmt werden.
+
+\subsubsection*{Gelenktypen}
+
+Um einen Roboter zu bewegen, sind Gelenke erforderlich (üblicherweise elektrisch angetrieben). Gelenktypen:
+\begin{itemize}
+\item Rotationsgelenk: Drehachse in $90\degree$ zu den Achsen der angeschlossenen Glieder.
+\item Torsionsgelenk: Drehachse parallel zu den Achsen der angeschlossenen Glieder.
+\item Revolvergelenk: Eingangsglied parallel, Ausgangsglied rechtwinklig zur Drehachse.
+\item Lineargelenk: gleitende Bewegung entlang der Achse.
+\end{itemize}
+
+\subsection{Kinematik}
+
+Zwei Probleme:
+\begin{itemize}
+\item Bei gegebenem Gelenkwinkel: Wo ist der Greifer? \\ $\to$ direktes kinematisches Problem
+\item Bei gegebener Greifer-Sollposition: Wie müssen die Gelenkwinkel eingestellt werden? \\ $\to$ inverses kinematisches Problem
+\end{itemize}
+
+\subsubsection*{Direktes kinematisches Problem}
+
+Um die Stellung des Greifers in Bezug auf das BKS zu bestimmen, werden die DH-Matrizen in der Reihenfolge der Armelemente multipliziert. \\ Bei $n$ Armelementen und $n$-dimensionalem Gelenkwinkelvektor $\theta$:
+$$p_{TCP}(\theta) = \prod\limits_{i=1}^n A_{i-1,i}(\theta_i)$$
+
+\subsubsection*{Inverses kinematisches Problem}
+
+Aus den DH-Parametern und der Stellung des Greifers sollen die Gelenkwinkel bestimmt werden. Die Gleichung
+$$p_{TCP}(\theta) = \prod\limits_{i=1}^n A_{i-1,i}(\theta_i)$$
+muss daher nach $\theta$ aufgelöst werden. Für 6 Gelenke sind dies 12 Gleichungen mit 6 Unbekannten. Die Gleichungssysteme sind überbestimmt und damit existiert keine eindeutige Lösung.
+
+
+
+
+
+
