@@ -170,6 +170,13 @@ Parameter $a$ und $b$ legen die Funktion fest. Anwendungen:
 \item Kombinationen
 \end{itemize}
 
+Spreizung\index{Spreizung}:
+\begin{itemize}
+\item Intensitäten im Bild werden linear auf gesamten Bereich ausgedehnt
+\item Abbildungsvorschrift: \[Img'(x,y) = q*\frac{Img(x,y)-min}{max-min}\]
+\item Als affine Punktoperation: \[Img'(x,y) =  \frac{q}{max-min}*Img(x,y)-\frac{q*min}{max-min}\]
+\end{itemize}
+
 \subsubsection*{Nicht-Affine Punktoperationen\index{Nicht-Affine Punktoperationen}}
 
 Beliebige Abbildungsfunktion $$f \, : \, [0 \dots q] \to [0 \dots q]$$
@@ -184,6 +191,21 @@ Anwendung:
 
 Histogrammfunktion: gibt die Häufigkeit eines Selektionsmerkmals an. Normalerweise: Grauwert
 $$H_{Img}(x) = \# (u,v) \, : \, Img(u,v) = x \, , \, x \in [0 \dots q]$$
+
+Histogrammdehnung\index{Histogrammdehung}:
+\begin{itemize}
+\item Verbesserung der Spreizung
+\item Anstatt $min$ und $max$ werden Quantile verwendet
+\item Akkumuliertes Histogramm berechnen: \[H_a(x):=\sum\limits_{k=0}^x H(k)\]
+\item \(H_q(p_{min})\) und \(H_q(p_{max})\) (z.B. \(p_{min} = 0.1\) und \(p_{max} = 0.9\)) bestimmen mit: \[H_q(p) := \inf\{ x \in \{ 0, \dots ,q\}:H_a(x) \geq p*H_a(q) \}\]
+\item Falls \(H_q(p_{min}) = H_q(p_{max})\): Bild ist homogen
+\item Sonst:
+\[ a:=\frac{q}{H_q(p_{max}) - H_q(p_{min})} \]
+\[ b:=-\frac{q*H_q(p_{min})}{H_q(p_{max}) - H_q(p_{min})} \]
+\[ Img' \gets \text{AffinePunktoperation}(Img,a,b) \]
+\end{itemize}
+
+Histogrammausgleich\index{Histogrammausgleich}:
 \begin{itemize}
 \item Histogrammausgleich: bessere Anpassung an das Sehvermögen des Menschen; kein Informationsgewinn \\
 $H_n(0)$ \verb|:=| $H_{Img}(0)$ \\
