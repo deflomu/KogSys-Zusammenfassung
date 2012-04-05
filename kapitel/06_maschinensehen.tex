@@ -737,7 +737,10 @@ mit
 i^2 &=& j^2 = k^2 = -1 \\ ij &=& -ji = k \\ jk &=& -kj = i \\ ki &=& -ik = j
 \end{eqnarray*}
 $q_w$ ist der Realteil, $\quaternion_v = (q_x,q_y,q_z)$ der Imaginärteil des Quaternions. Man schreibt einfach $(q_x,q_y,q_z,q_w)$ oder $(\quaternion_v,q_w)$. \\[0,1cm]
-Rechenregeln für Quaternionen: \\
+Rechenregeln für Quaternionen:
+
+Konjugation: \[ \overline{\quaternion} = (-\quaternion_v, q_w)\]
+
 Norm: $$N(\quaternion) = \sqrt{\quaternion \overline{\quaternion}} = \sqrt{\overline{\quaternion}\quaternion} = \sqrt{q_x^2 + q_y^2 + q_z^2 + q_w^2}$$
 Quaternionen $\quaternion$ mit $N(\quaternion) = 1$ heißen Einheitsquaternionen\index{Einheitsquaternionen}. \\ Multiplikative Identität: $$I = (0,1)$$ Multiplikative Inverse: $$\quaternion^{-1} = \frac{\overline{\quaternion}}{N^2(\quaternion)}$$
 Rotation mit Quaternionen:
