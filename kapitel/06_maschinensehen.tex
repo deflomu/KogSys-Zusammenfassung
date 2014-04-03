@@ -397,10 +397,13 @@ Kantendetektion: Stärkere Kanten,weniger Rauschen
 	\begin{itemize}
 	\item Verwende zwei Schwellwerte \(T_1\) und \(T_2\) mit \(T_1 \leq T_2\)
 	\item Markiere alle Pixel mit Werten größer \(T_2\) als Kantenpixel
-	\item Setze alle Pixel mit Werten kleiner \(T_1\) auf 0	\item Beginnend bei jedem Kantenpixel:
-		\begin{itemize}		\item Verfolge alle angrenzenden Kanten, solange Wert \(\geq T_1\)
+	\item Setze alle Pixel mit Werten kleiner \(T_1\) auf 0
+	\item Beginnend bei jedem Kantenpixel:
+		\begin{itemize}
+		\item Verfolge alle angrenzenden Kanten, solange Wert \(\geq T_1\)
 		\item Markiere alle dazugehörigen Pixel als Kanten
-		\end{itemize}	\item Setze alle noch nicht als Kante markierten Pixel auf 0
+		\end{itemize}
+	\item Setze alle noch nicht als Kante markierten Pixel auf 0
 	\end{itemize}
 \end{enumerate}
 
@@ -745,7 +748,7 @@ Norm: $$N(\quaternion) = \sqrt{\quaternion \overline{\quaternion}} = \sqrt{\over
 Quaternionen $\quaternion$ mit $N(\quaternion) = 1$ heißen Einheitsquaternionen\index{Einheitsquaternionen}. \\ Multiplikative Identität: $$I = (0,1)$$ Multiplikative Inverse: $$\quaternion^{-1} = \frac{\overline{\quaternion}}{N^2(\quaternion)}$$
 Rotation mit Quaternionen:
 \begin{itemize}
-\item Einheitsquaternion $\quaternion$ ist definiert durch Rotationsachse $u$ mit $|u| = 1$ und Winkel $\theta$: $$\quaternion = \left( u \sin \frac{\theta}{2} \, , \, \cos \frac{\theta}{2} \right)$$
+\item Einheitsquaternion $\quaternion$ ist definiert durch Rotationsachse $u$ mit $|u| = 1$ und Winkel $\theta$: $$\quaternion = \left( \cos \frac{\theta}{2} \, , \, u \sin \frac{\theta}{2} \right)$$
 \item Quaternion \textbf{a} ist definiert durch zu rotierenden Vektor $v$: $$\textbf{a} = (v \, , \, 0)$$
 \item Das Produkt $\textbf{qa}\overline{\textbf{q}}$ rotiert $v$ um die Achse $u$ mit dem Winkel $\theta$.
 \end{itemize}
